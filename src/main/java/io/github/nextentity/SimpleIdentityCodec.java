@@ -15,10 +15,14 @@ import java.time.temporal.ChronoUnit;
  * [7-4]:   校验码 (4 位) - 身份证校验位
  * [3-0]:   版本号 (4 位) - 编码版本标识
  * </pre>
+ * 
+ * @version 1.0
  */
 public class SimpleIdentityCodec implements IdentityCodec {
+    /** 基准日期：1900年1月1日 */
     private static final LocalDate BASE_DATE = LocalDate.of(1900, 1, 1);
-    private static final int VERSION = 1; // 4 位版本号，范围 0-15
+    /** 编码版本号 */
+    private static final int VERSION = 1;
 
     /**
      * 将 18 位身份证号码编码为 long 类型
@@ -37,30 +41,30 @@ public class SimpleIdentityCodec implements IdentityCodec {
     @Override
     public long encode(String identityNumber) {
         // 1. 解析 18 位身份证号码各组成部分
-        int address = Integer.parseInt(identityNumber.substring(0, 6)); // 6 位地址码
-        int year = Integer.parseInt(identityNumber.substring(6, 10)); // 4 位年份
-        int month = Integer.parseInt(identityNumber.substring(10, 12)); // 2 位月份
-        int day = Integer.parseInt(identityNumber.substring(12, 14)); // 2 位日期
-        int sequence = Integer.parseInt(identityNumber.substring(14, 17)); // 3 位顺序码
-        char checkChar = identityNumber.charAt(17); // 1 位校验码
-        int check = (checkChar == 'X' || checkChar == 'x') ? 10 : (checkChar - '0');
+        int administrativeCode = Integer.parseInt(identityNumber.substring(0, 6)); // 6 位地址码
+        int birthYear = Integer.parseInt(identityNumber.substring(6, 10)); // 4 位年份
+        int birthMonth = Integer.parseInt(identityNumber.substring(10, 12)); // 2 位月份
+        int birthDay = Integer.parseInt(identityNumber.substring(12, 14)); // 2 位日期
+        int sequenceNumber = Integer.parseInt(identityNumber.substring(14, 17)); // 3 位顺序码
+        char checkDigitChar = identityNumber.charAt(17); // 1 位校验码
+        int checkDigit = (checkDigitChar == 'X' || checkDigitChar == 'x') ? 10 : (checkDigitChar - '0');
 
         // 2. 计算出生日期距离基准日期 (1900-01-01) 的天数偏移
-        LocalDate birthDate = LocalDate.of(year, month, day);
-        long days = ChronoUnit.DAYS.between(BASE_DATE, birthDate);
-        if (days < 0 || days >= (1L << 18)) {
+        LocalDate birthDate = LocalDate.of(birthYear, birthMonth, birthDay);
+        long daysOffset = ChronoUnit.DAYS.between(BASE_DATE, birthDate);
+        if (daysOffset < 0 || daysOffset >= (1L << 18)) {
             throw new IllegalArgumentException("Birth date out of range");
         }
 
         // 3. 按位域结构组合各字段 (总共 56 位)
-        long result = 0L;
+        long encodedResult = 0L;
         // 预留高位 [63-56] 保持为 0，确保兼容性
-        result |= ((long) address & 0xFFFFFL) << 36; // 20 位地址码 -> [55-36] 位
-        result |= (days & 0x3FFFFL) << 18; // 18 位天数偏移 -> [35-18] 位
-        result |= ((long) sequence & 0x3FFL) << 8; // 10 位顺序码 -> [17-8] 位
-        result |= ((long) check & 0xFL) << 4; // 4 位校验码 -> [7-4] 位
-        result |= (VERSION & 0xFL); // 4 位版本号 -> [3-0] 位 (最低位)
-        return result;
+        encodedResult |= ((long) administrativeCode & 0xFFFFFL) << 36; // 20 位地址码 -> [55-36] 位
+        encodedResult |= (daysOffset & 0x3FFFFL) << 18; // 18 位天数偏移 -> [35-18] 位
+        encodedResult |= ((long) sequenceNumber & 0x3FFL) << 8; // 10 位顺序码 -> [17-8] 位
+        encodedResult |= ((long) checkDigit & 0xFL) << 4; // 4 位校验码 -> [7-4] 位
+        encodedResult |= (VERSION & 0xFL); // 4 位版本号 -> [3-0] 位 (最低位)
+        return encodedResult;
     }
 
     /**
@@ -89,22 +93,22 @@ public class SimpleIdentityCodec implements IdentityCodec {
         }
 
         // 3. 按位域分别提取各字段
-        int address = (int) ((encoded >>> 36) & 0xFFFFFL); // 提取20位地址码 [55-36]
-        long days = (encoded >>> 18) & 0x3FFFFL; // 提取18位天数 [35-18]
-        int sequence = (int) ((encoded >>> 8) & 0x3FFL); // 提取10位顺序码 [17-8]
-        int check = (int) ((encoded >>> 4) & 0xFL); // 提取4位校验码 [7-4]
-        String checkChar = check == 10 ? "X" : String.valueOf(check);
+        int administrativeCode = (int) ((encoded >>> 36) & 0xFFFFFL); // 提取20位地址码 [55-36]
+        long daysOffset = (encoded >>> 18) & 0x3FFFFL; // 提取18位天数 [35-18]
+        int sequenceNumber = (int) ((encoded >>> 8) & 0x3FFL); // 提取10位顺序码 [17-8]
+        int checkDigit = (int) ((encoded >>> 4) & 0xFL); // 提取4位校验码 [7-4]
+        String checkDigitStr = checkDigit == 10 ? "X" : String.valueOf(checkDigit);
 
         // 4. 根据天数偏移计算出生日期
-        LocalDate birthDate = BASE_DATE.plusDays(days);
+        LocalDate birthDate = BASE_DATE.plusDays(daysOffset);
 
         // 5. 组装并返回18位身份证号码
         return String.format("%06d%04d%02d%02d%03d%s",
-                address, // 6位地址码
+                administrativeCode, // 6位地址码
                 birthDate.getYear(), // 4位年份
                 birthDate.getMonthValue(), // 2位月份
                 birthDate.getDayOfMonth(), // 2位日期
-                sequence, // 3位顺序码
-                checkChar); // 1位校验码
+                sequenceNumber, // 3位顺序码
+                checkDigitStr); // 1位校验码
     }
 }

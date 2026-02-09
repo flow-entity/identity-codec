@@ -3,7 +3,7 @@ package io.github.nextentity;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.nio.ByteBuffer;
+import java.util.Random;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -18,7 +18,7 @@ public class EncryptedIdentityCodecTest {
     @BeforeEach
     void setUp() {
         // 使用固定的测试密钥流
-        byte[] testKeystream = new byte[]{0x12, 0x34, 0x56, 0x78, (byte) 0x9A, (byte) 0xBC, (byte) 0xDE, (byte) 0xF0};
+        long testKeystream = new Random().nextLong();
         encryptedCodec = new EncryptedIdentityCodec(testKeystream);
     }
 
@@ -72,8 +72,8 @@ public class EncryptedIdentityCodecTest {
         String idCard = "110105194912310021";
 
         // 使用不同密钥的编码器
-        byte[] key1 = new byte[]{0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08};
-        byte[] key2 = new byte[]{(byte) 0xFF, (byte) 0xFE, (byte) 0xFD, (byte) 0xFC, (byte) 0xFB, (byte) 0xFA, (byte) 0xF9, (byte) 0xF8};
+        long key1 = 0x0102030405060708L;
+        long key2 = 0xFFFFFFFFFFFFFFFEL;
 
         EncryptedIdentityCodec codec1 = new EncryptedIdentityCodec(key1);
         EncryptedIdentityCodec codec2 = new EncryptedIdentityCodec(key2);
@@ -82,24 +82,6 @@ public class EncryptedIdentityCodecTest {
         long result2 = codec2.encode(idCard);
 
         assertNotEquals(result1, result2, "不同密钥应该产生不同的加密结果");
-    }
-
-    /**
-     * 测试异常情况 - 无效的密钥长度
-     */
-    @Test
-    void testInvalidKeyLength() {
-        // 密钥太短
-        assertThrows(IllegalArgumentException.class, () ->
-                new EncryptedIdentityCodec(new byte[]{0x01, 0x02, 0x03}), "密钥太短应该抛出异常");
-
-        // 密钥太长
-        assertThrows(IllegalArgumentException.class, () ->
-                new EncryptedIdentityCodec(new byte[]{0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09}), "密钥太长应该抛出异常");
-
-        // null 密钥
-        assertThrows(IllegalArgumentException.class, () ->
-                new EncryptedIdentityCodec(null), "null 密钥应该抛出异常");
     }
 
     /**
@@ -186,11 +168,9 @@ public class EncryptedIdentityCodecTest {
 
         // 先用SimpleIdentityCodec编码，再手动加密解密验证流程
         long plainEncoded = simpleCodec.encode(idCard);
-        byte[] plainBytes = ByteBuffer.allocate(8).putLong(plainEncoded).array();
 
         // 手动加密
-        byte[] encryptedBytes = encryptedCodec.getXorEncryptor().encrypt(plainBytes);
-        long manualEncrypted = ByteBuffer.wrap(encryptedBytes).getLong();
+        long manualEncrypted = encryptedCodec.getXorEncryptor().encrypt(plainEncoded);
 
         // 使用封装的加密编码器
         long autoEncrypted = encryptedCodec.encode(idCard);
