@@ -1,0 +1,205 @@
+package io.github.nextentity;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.nio.ByteBuffer;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+/**
+ * EncryptedIdentityCodec 测试类
+ * 测试加密身份编码器的功能
+ */
+public class EncryptedIdentityCodecTest {
+
+    private EncryptedIdentityCodec encryptedCodec;
+
+    @BeforeEach
+    void setUp() {
+        // 使用固定的测试密钥流
+        byte[] testKeystream = new byte[]{0x12, 0x34, 0x56, 0x78, (byte) 0x9A, (byte) 0xBC, (byte) 0xDE, (byte) 0xF0};
+        encryptedCodec = new EncryptedIdentityCodec(testKeystream);
+    }
+
+    /**
+     * 测试基本的加密编码解码功能
+     */
+    @Test
+    void testEncryptDecryptBasic() {
+        String idCard = "110105194912310021";
+
+        // 加密编码
+        long encrypted = encryptedCodec.encode(idCard);
+        System.out.println("原始身份证: " + idCard);
+        System.out.println("加密编码结果: " + encrypted);
+        System.out.println("加密二进制: " + Long.toBinaryString(encrypted));
+
+        // 解密解码
+        String decrypted = encryptedCodec.decode(encrypted);
+        System.out.println("解密解码结果: " + decrypted);
+
+        // 验证
+        assertEquals(idCard, decrypted, "加密解密后应该与原始身份证号码一致");
+    }
+
+    /**
+     * 测试与未加密版本的结果不同
+     */
+    @Test
+    void testEncryptionEffect() {
+        String idCard = "110105194912310021";
+        SimpleIdentityCodec simpleCodec = new SimpleIdentityCodec();
+
+        // 普通编码
+        long plainResult = simpleCodec.encode(idCard);
+
+        // 加密编码
+        long encryptedResult = encryptedCodec.encode(idCard);
+
+        // 验证结果不同（加密起了作用）
+        assertNotEquals(plainResult, encryptedResult, "加密结果应该与普通编码结果不同");
+
+        System.out.println("普通编码: " + plainResult);
+        System.out.println("加密编码: " + encryptedResult);
+    }
+
+    /**
+     * 测试不同的密钥产生不同的加密结果
+     */
+    @Test
+    void testDifferentKeys() {
+        String idCard = "110105194912310021";
+
+        // 使用不同密钥的编码器
+        byte[] key1 = new byte[]{0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08};
+        byte[] key2 = new byte[]{(byte) 0xFF, (byte) 0xFE, (byte) 0xFD, (byte) 0xFC, (byte) 0xFB, (byte) 0xFA, (byte) 0xF9, (byte) 0xF8};
+
+        EncryptedIdentityCodec codec1 = new EncryptedIdentityCodec(key1);
+        EncryptedIdentityCodec codec2 = new EncryptedIdentityCodec(key2);
+
+        long result1 = codec1.encode(idCard);
+        long result2 = codec2.encode(idCard);
+
+        assertNotEquals(result1, result2, "不同密钥应该产生不同的加密结果");
+    }
+
+    /**
+     * 测试异常情况 - 无效的密钥长度
+     */
+    @Test
+    void testInvalidKeyLength() {
+        // 密钥太短
+        assertThrows(IllegalArgumentException.class, () ->
+                new EncryptedIdentityCodec(new byte[]{0x01, 0x02, 0x03}), "密钥太短应该抛出异常");
+
+        // 密钥太长
+        assertThrows(IllegalArgumentException.class, () ->
+                new EncryptedIdentityCodec(new byte[]{0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09}), "密钥太长应该抛出异常");
+
+        // null 密钥
+        assertThrows(IllegalArgumentException.class, () ->
+                new EncryptedIdentityCodec(null), "null 密钥应该抛出异常");
+    }
+
+    /**
+     * 测试获取内部组件
+     */
+    @Test
+    void testGetComponentAccess() {
+        assertNotNull(encryptedCodec.getIdentityCodec(), "应该能够获取 IdentityCodec");
+        assertNotNull(encryptedCodec.getXorEncryptor(), "应该能够获取 XorEncryptor");
+    }
+
+    /**
+     * 测试多个身份证号码的加解密
+     */
+    @Test
+    void testMultipleIdCards() {
+        String[] testIds = {
+                "110101199001011234",
+                "310101198506152345",
+                "440101198012123456",
+                "510101197503214567"
+        };
+
+        for (String id : testIds) {
+            long encrypted = encryptedCodec.encode(id);
+            String decrypted = encryptedCodec.decode(encrypted);
+            assertEquals(id, decrypted, "多身份证测试失败: " + id);
+        }
+    }
+
+    /**
+     * 测试加密的一致性
+     */
+    @Test
+    void testEncryptionConsistency() {
+        String idCard = "110105194912310021";
+
+        // 多次加密应该得到相同结果
+        long encrypted1 = encryptedCodec.encode(idCard);
+        long encrypted2 = encryptedCodec.encode(idCard);
+        long encrypted3 = encryptedCodec.encode(idCard);
+
+        assertEquals(encrypted1, encrypted2, "同一身份证多次加密应该一致");
+        assertEquals(encrypted2, encrypted3, "同一身份证多次加密应该一致");
+    }
+
+    /**
+     * 性能测试 - 加密编码解码
+     */
+    @Test
+    void testEncryptedPerformance() {
+        String[] testIds = {
+                "110101199001011234",
+                "110101198506152345",
+                "110101200012123456",
+                "110101197503214567",
+                "110101196008155678"
+        };
+
+        long startTime = System.nanoTime();
+
+        for (int i = 0; i < 1000; i++) {
+            for (String id : testIds) {
+                long encrypted = encryptedCodec.encode(id);
+                String decrypted = encryptedCodec.decode(encrypted);
+                assertEquals(id, decrypted);
+            }
+        }
+
+        long endTime = System.nanoTime();
+        long duration = (endTime - startTime) / 1_000_000; // 转换为毫秒
+
+        System.out.println("加密性能测试完成，耗时: " + duration + " ms");
+        assertTrue(duration < 10000, "加密性能测试应该在10秒内完成");
+    }
+
+    /**
+     * 测试与 SimpleIdentityCodec 的兼容性
+     */
+    @Test
+    void testCompatibilityWithSimpleCodec() {
+        String idCard = "110105194912310021";
+        SimpleIdentityCodec simpleCodec = new SimpleIdentityCodec();
+
+        // 先用SimpleIdentityCodec编码，再手动加密解密验证流程
+        long plainEncoded = simpleCodec.encode(idCard);
+        byte[] plainBytes = ByteBuffer.allocate(8).putLong(plainEncoded).array();
+
+        // 手动加密
+        byte[] encryptedBytes = encryptedCodec.getXorEncryptor().encrypt(plainBytes);
+        long manualEncrypted = ByteBuffer.wrap(encryptedBytes).getLong();
+
+        // 使用封装的加密编码器
+        long autoEncrypted = encryptedCodec.encode(idCard);
+
+        // 验证结果一致
+        assertEquals(manualEncrypted, autoEncrypted, "手动加密和自动加密结果应该一致");
+
+        // 验证解密也一致
+        String autoDecrypted = encryptedCodec.decode(autoEncrypted);
+        assertEquals(idCard, autoDecrypted, "自动解密应该正确");
+    }
+}
