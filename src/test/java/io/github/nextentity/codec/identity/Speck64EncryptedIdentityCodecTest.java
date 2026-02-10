@@ -2,6 +2,8 @@ package io.github.nextentity.codec.identity;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -10,6 +12,8 @@ import static org.junit.jupiter.api.Assertions.*;
  * 测试使用SPECK64加密的身份编码器功能
  */
 public class Speck64EncryptedIdentityCodecTest {
+    
+    private static final Logger logger = LoggerFactory.getLogger(Speck64EncryptedIdentityCodecTest.class);
 
     private IdentityCodec encryptedCodec;
     private static final int[] TEST_KEY = {0x01234567, 0x89ABCDEF, 0xFEDCBA98, 0x76543210};
@@ -29,12 +33,12 @@ public class Speck64EncryptedIdentityCodecTest {
 
         // 编码
         long encoded = encryptedCodec.encode(idCard);
-        System.out.println("身份证: " + idCard);
-        System.out.println("编码结果: " + Long.toHexString(encoded));
+        logger.info("身份证: {}", idCard);
+        logger.info("编码结果: {}", Long.toHexString(encoded));
 
         // 解码
         String decoded = encryptedCodec.decode(encoded);
-        System.out.println("解码结果: " + decoded);
+        logger.info("解码结果: {}", decoded);
 
         assertEquals(idCard, decoded, "解码后的身份证应该与原始一致");
         assertNotEquals(idCard.hashCode(), encoded, "编码结果应该与原始哈希值不同");
@@ -152,7 +156,7 @@ public class Speck64EncryptedIdentityCodecTest {
         long endTime = System.nanoTime();
         long duration = (endTime - startTime) / 1_000_000; // 转换为毫秒
 
-        System.out.println("SPECK64加密身份编码性能测试完成，耗时: " + duration + " ms");
+        logger.info("SPECK64加密身份编码性能测试完成，耗时: {} ms", duration);
         assertTrue(duration < 5000, "性能测试应该在5秒内完成");
     }
 

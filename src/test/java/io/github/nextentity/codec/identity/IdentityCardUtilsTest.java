@@ -1,6 +1,8 @@
 package io.github.nextentity.codec.identity;
 
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -9,6 +11,8 @@ import static org.junit.jupiter.api.Assertions.*;
  * 测试身份证号码校验码计算功能
  */
 public class IdentityCardUtilsTest {
+    
+    private static final Logger logger = LoggerFactory.getLogger(IdentityCardUtilsTest.class);
 
     /**
      * 测试校验码计算 - 已知正确的身份证号码
@@ -124,7 +128,7 @@ public class IdentityCardUtilsTest {
         assertTrue(exception.getMessage().contains("check code is invalid"),
                 "异常消息应该包含校验码错误信息");
 
-        System.out.println("校验失败异常消息: " + exception.getMessage());
+        logger.info("校验失败异常消息: {}", exception.getMessage());
     }
 
     /**

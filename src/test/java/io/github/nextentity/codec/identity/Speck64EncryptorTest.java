@@ -2,6 +2,8 @@ package io.github.nextentity.codec.identity;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -10,6 +12,8 @@ import static org.junit.jupiter.api.Assertions.*;
  * 测试 SPECK64/128 分组密码加密器的功能
  */
 public class Speck64EncryptorTest {
+    
+    private static final Logger logger = LoggerFactory.getLogger(Speck64EncryptorTest.class);
 
     private Speck64Encryptor encryptor;
     private static final int[] TEST_KEY = {0x01234567, 0x89ABCDEF, 0xFEDCBA98, 0x76543210};
@@ -87,12 +91,12 @@ public class Speck64EncryptorTest {
 
         // 加密
         long encrypted = encryptor.encrypt(plaintext);
-        System.out.println("原始数据: " + Long.toHexString(plaintext));
-        System.out.println("加密结果: " + Long.toHexString(encrypted));
+        logger.info("原始数据: {}", Long.toHexString(plaintext));
+        logger.info("加密结果: {}", Long.toHexString(encrypted));
 
         // 解密
         long decrypted = encryptor.decrypt(encrypted);
-        System.out.println("解密结果: " + Long.toHexString(decrypted));
+        logger.info("解密结果: {}", Long.toHexString(decrypted));
 
         // 验证解密后与原始数据一致
         assertEquals(plaintext, decrypted, "解密后应该与原始数据一致");
@@ -250,7 +254,7 @@ public class Speck64EncryptorTest {
         long endTime = System.nanoTime();
         long duration = (endTime - startTime) / 1_000_000; // 转换为毫秒
 
-        System.out.println("SPECK64加密性能测试完成，耗时: " + duration + " ms");
+        logger.info("SPECK64加密性能测试完成，耗时: {} ms", duration);
         assertTrue(duration < 5000, "性能测试应该在5秒内完成");
     }
 

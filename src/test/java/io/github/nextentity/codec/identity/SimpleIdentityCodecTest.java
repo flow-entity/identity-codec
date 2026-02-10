@@ -2,6 +2,8 @@ package io.github.nextentity.codec.identity;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -10,6 +12,8 @@ import static org.junit.jupiter.api.Assertions.*;
  * 测试身份证编码器的编码和解码功能
  */
 public class SimpleIdentityCodecTest {
+    
+    private static final Logger logger = LoggerFactory.getLogger(SimpleIdentityCodecTest.class);
 
     private SimpleIdentityCodec codec;
 
@@ -27,13 +31,13 @@ public class SimpleIdentityCodecTest {
 
         // 编码
         long encoded = codec.encode(idCard);
-        System.out.println("原始身份证: " + idCard);
-        System.out.println("编码结果: " + encoded);
-        System.out.println("二进制表示: " + Long.toBinaryString(encoded));
+        logger.info("原始身份证: {}", idCard);
+        logger.info("编码结果: {}", encoded);
+        logger.info("二进制表示: {}", Long.toBinaryString(encoded));
 
         // 解码
         String decoded = codec.decode(encoded);
-        System.out.println("解码结果: " + decoded);
+        logger.info("解码结果: {}", decoded);
 
         // 验证
         assertEquals(idCard, decoded, "编码解码后应该与原始身份证号码一致");
@@ -109,12 +113,12 @@ public class SimpleIdentityCodecTest {
                 "110101999912319991"  // 接近公元1000年
         };
 
-        System.out.println("=== 边界日期处理测试 ===");
+        logger.info("=== 边界日期处理测试 ===");
 
         // 验证每个边界案例
         for (int i = 0; i < boundaryTestCases.length; i++) {
             String testCase = boundaryTestCases[i];
-            System.out.println("测试案例 " + (i + 1) + ": " + testCase);
+            logger.info("测试案例 {}: {}", (i + 1), testCase);
 
             try {
                 long encoded = codec.encode(testCase);
@@ -123,11 +127,11 @@ public class SimpleIdentityCodecTest {
                 assertEquals(testCase, decoded,
                         "边界日期处理失败 - 测试案例 " + (i + 1) + ": " + testCase);
 
-                System.out.println("  ✓ 编码: " + encoded);
-                System.out.println("  ✓ 解码: " + decoded);
+                logger.info("  ✓ 编码: {}", encoded);
+                logger.info("  ✓ 解码: {}", decoded);
 
             } catch (Exception e) {
-                System.out.println("  ✗ 处理异常: " + e.getMessage());
+                logger.warn("  ✗ 处理异常: {}", e.getMessage());
                 // 对于超出范围的日期，验证是否正确抛出异常
                 if (testCase.equals("110101999912319999")) {
                     // 这个日期应该在正常范围内
@@ -138,7 +142,7 @@ public class SimpleIdentityCodecTest {
             }
         }
 
-        System.out.println("边界日期处理测试完成");
+        logger.info("边界日期处理测试完成");
     }
 
     /**
@@ -158,18 +162,18 @@ public class SimpleIdentityCodecTest {
      */
     @Test
     void testCheckDigitCaseHandling() {
-        System.out.println("=== 校验码大小写处理测试 ===");
+        logger.info("=== 校验码大小写处理测试 ===");
 
         // 测试大写X
         String upperXId = "11010119900307109X";
-        System.out.println("测试大写X: " + upperXId);
+        logger.info("测试大写X: {}", upperXId);
 
         try {
             long encodedUpper = codec.encode(upperXId);
             String decodedUpper = codec.decode(encodedUpper);
             assertEquals(upperXId, decodedUpper, "大写X处理失败");
-            System.out.println("  ✓ 大写X编码: " + encodedUpper);
-            System.out.println("  ✓ 大写X解码: " + decodedUpper);
+            logger.info("  ✓ 大写X编码: {}", encodedUpper);
+            logger.info("  ✓ 大写X解码: {}", decodedUpper);
         } catch (Exception e) {
             fail("大写X处理异常: " + e.getMessage());
         }
@@ -177,15 +181,15 @@ public class SimpleIdentityCodecTest {
         // 测试小写x - 验证编码时能正确处理，解码时转换为大写X
         String lowerXId = "11010119900307109x";
         String expectedDecoded = "11010119900307109X"; // 解码后应该是大写X
-        System.out.println("测试小写x: " + lowerXId);
-        System.out.println("期望解码结果: " + expectedDecoded);
+        logger.info("测试小写x: {}", lowerXId);
+        logger.info("期望解码结果: {}", expectedDecoded);
 
         try {
             long encodedLower = codec.encode(lowerXId);
             String decodedLower = codec.decode(encodedLower);
             assertEquals(expectedDecoded, decodedLower, "小写x处理失败 - 解码后应为大写X");
-            System.out.println("  ✓ 小写x编码: " + encodedLower);
-            System.out.println("  ✓ 小写x解码: " + decodedLower);
+            logger.info("  ✓ 小写x编码: {}", encodedLower);
+            logger.info("  ✓ 小写x解码: {}", decodedLower);
         } catch (Exception e) {
             fail("小写x处理异常: " + e.getMessage());
         }
@@ -199,7 +203,7 @@ public class SimpleIdentityCodecTest {
         assertEquals(upperEncoded, lowerEncoded,
                 "大小写X应该产生相同的编码结果（校验码都转换为数值10）");
 
-        System.out.println("校验码大小写处理测试完成");
+        logger.info("校验码大小写处理测试完成");
     }
 
     /**
@@ -255,33 +259,33 @@ public class SimpleIdentityCodecTest {
      */
     @Test
     void testEarlyBirthDateException() {
-        System.out.println("=== 早于基准日期异常处理测试 ===");
+        logger.info("=== 早于基准日期异常处理测试 ===");
 
         // 验证基准日期本身是允许的
         String baseDateId = "110101000001011236"; // 基准日期0000-01-01
-        System.out.println("验证基准日期: " + baseDateId);
+        logger.info("验证基准日期: " + baseDateId);
         try {
             long encoded = codec.encode(baseDateId);
             String decoded = codec.decode(encoded);
             assertEquals(baseDateId, decoded, "基准日期应该能正常编码解码");
-            System.out.println("  ✓ 基准日期处理正常");
+            logger.info("  ✓ 基准日期处理正常");
         } catch (Exception e) {
             fail("基准日期处理异常: " + e.getMessage());
         }
 
         // 验证基准日期后一天也是允许的
         String baseDatePlusOneId = "110101000101021239"; // 基准日期后一天
-        System.out.println("验证基准日期后一天: " + baseDatePlusOneId);
+        logger.info("验证基准日期后一天: {}", baseDatePlusOneId);
         try {
             long encoded = codec.encode(baseDatePlusOneId);
             String decoded = codec.decode(encoded);
             assertEquals(baseDatePlusOneId, decoded, "基准日期后一天应该能正常编码解码");
-            System.out.println("  ✓ 基准日期后一天处理正常");
+            logger.info("  ✓ 基准日期后一天处理正常");
         } catch (Exception e) {
             fail("基准日期后一天处理异常: " + e.getMessage());
         }
 
-        System.out.println("早于基准日期异常处理测试完成");
+        logger.info("早于基准日期异常处理测试完成");
     }
 
     /**
@@ -300,7 +304,7 @@ public class SimpleIdentityCodecTest {
         int sequence = (int) ((encoded >>> 8) & 0x3FFL);
         assertEquals(2, sequence, "顺序码提取错误");
 
-        System.out.println("位域分配验证通过");
+        logger.info("位域分配验证通过");
     }
 
     /**
@@ -329,7 +333,7 @@ public class SimpleIdentityCodecTest {
         long endTime = System.nanoTime();
         long duration = (endTime - startTime) / 1_000_000; // 转换为毫秒
 
-        System.out.println("批量性能测试完成，耗时: " + duration + " ms");
+        logger.info("批量性能测试完成，耗时: " + duration + " ms");
         assertTrue(duration < 5000, "性能测试应该在5秒内完成");
     }
 
@@ -357,13 +361,13 @@ public class SimpleIdentityCodecTest {
      */
     @Test
     void testUnsupportedVersionException() {
-        System.out.println("=== 不支持版本号异常处理测试 ===");
+        logger.info("=== 不支持版本号异常处理测试 ===");
 
         // 创建不同版本号的测试数据
         int[] unsupportedVersions = {0, 2, 3, 15}; // 不支持的版本号
 
         for (int version : unsupportedVersions) {
-            System.out.println("测试不支持的版本 " + version);
+            logger.info("测试不支持的版本 " + version);
 
             // 构造包含特定版本号的long值
             // 版本号在最低4位 [3-0]
@@ -378,23 +382,23 @@ public class SimpleIdentityCodecTest {
                        exception.getMessage().contains("不支持"),
                     "异常消息应该包含版本错误信息: " + expectedMessage);
 
-            System.out.println("  ✓ 正确抛出异常: " + exception.getMessage());
+            logger.info("  ✓ 正确抛出异常: " + exception.getMessage());
         }
 
         // 验证支持的版本号(版本1)能正常工作
-        System.out.println("验证支持的版本1:");
+        logger.info("验证支持的版本1:");
         try {
             String validId = "110101199001011237";
             long encoded = codec.encode(validId);
             String decoded = codec.decode(encoded);
             assertEquals(validId, decoded, "版本1应该能正常解码");
-            System.out.println("  ✓ 版本1处理正常");
+            logger.info("  ✓ 版本1处理正常");
         } catch (Exception e) {
             fail("版本1处理异常: " + e.getMessage());
         }
 
         // 测试版本号在有效范围边界的情况
-        System.out.println("测试版本号边界情况:");
+        logger.info("测试版本号边界情况:");
         // 版本号4位，范围0-15，但只支持版本1
         for (int version = 0; version <= 15; version++) {
             if (version == 1) continue; // 跳过支持的版本
@@ -403,8 +407,8 @@ public class SimpleIdentityCodecTest {
             assertThrows(InvalidEncodingException.class, () ->
                     codec.decode(testData), "版本 " + version + " 应该抛出异常");
         }
-        System.out.println("  ✓ 所有非1版本都正确抛出异常");
+        logger.info("  ✓ 所有非1版本都正确抛出异常");
 
-        System.out.println("不支持版本号异常处理测试完成");
+        logger.info("不支持版本号异常处理测试完成");
     }
 }
