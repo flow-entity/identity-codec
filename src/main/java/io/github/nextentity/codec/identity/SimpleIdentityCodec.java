@@ -47,11 +47,11 @@ public class SimpleIdentityCodec implements IdentityCodec {
         byte[] buffer = identityNumber.getBytes(StandardCharsets.ISO_8859_1);
         IdentityCardUtils.validate(buffer);
         // 1. 解析 18 位身份证号码各组成部分（不存储校验码）
-        int administrativeCode = IdentityCardUtils.parseInt(buffer, 0, 6); // 6 位地址码
+        int address = IdentityCardUtils.parseInt(buffer, 0, 6); // 6 位地址码
         int year = IdentityCardUtils.parseInt(buffer, 6, 10); // 4 位年份
         int month = IdentityCardUtils.parseInt(buffer, 10, 12); // 2 位月份
         int day = IdentityCardUtils.parseInt(buffer, 12, 14); // 2 位日期
-        int sequenceNumber = IdentityCardUtils.parseInt(buffer, 14, 17); // 3 位顺序码
+        int sequence = IdentityCardUtils.parseInt(buffer, 14, 17); // 3 位顺序码
 
         // 2. 计算出生日期距离基准日期 (0000-01-01) 的天数偏移
         LocalDate birth = LocalDate.of(year, month, day);
@@ -60,10 +60,10 @@ public class SimpleIdentityCodec implements IdentityCodec {
         // 3. 按位域结构组合各字段 (总共 56 位，不含校验码)
         long result = 0L;
         // 预留高位 [63-56] 保持为 0，确保兼容性
-        result |= ((long) administrativeCode & 0xFFFFFL) << 36; // 20 位地址码 -> [55-36] 位
-        result |= (daysOffset & 0x3FFFFFL) << 14;               // 22 位生日码 -> [35-14] 位
-        result |= ((long) sequenceNumber & 0x3FFL) << 4;        // 10 位顺序码 -> [13- 4] 位
-        result |= (VERSION & 0xFL);                             //  4 位版本号 -> [ 3- 0] 位
+        result |= ((long) address & 0xFFFFFL) << 36; // 20 位地址码 -> [55-36] 位
+        result |= (daysOffset & 0x3FFFFFL) << 14;    // 22 位生日码 -> [35-14] 位
+        result |= ((long) sequence & 0x3FFL) << 4;   // 10 位顺序码 -> [13- 4] 位
+        result |= (VERSION & 0xFL);                  //  4 位版本号 -> [ 3- 0] 位
         return result;
     }
 
