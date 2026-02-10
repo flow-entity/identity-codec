@@ -35,5 +35,8 @@ build/
 ### VS Code ###
 .vscode/
 
+### Qoder Editor ###
+.qoder/
+
 ### Mac OS ###
 .DS_Store

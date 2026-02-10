@@ -100,7 +100,7 @@ System.out.println("解密结果: " + decrypted);
 
 ### 存储效率
 
-- **原始大小**：18字符 × 2字节 = 36字节
+- **原始大小**：18字符 × 1字节 = 18字节
 - **编码后**：8字节 (long类型)
 - **压缩率**：77.8% 减少
 
@@ -187,7 +187,7 @@ mvn jacoco:report
 
 ### 开发环境要求
 
-- Java 8 或更高版本
+- Java 25 或更高版本
 - Maven 3.6+
 - IDE推荐：IntelliJ IDEA 或 Eclipse
 
