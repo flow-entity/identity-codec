@@ -1,7 +1,6 @@
 # Identity Codec 身份编码器
 
 [![Build Status](https://img.shields.io/badge/build-passing-brightgreen)](https://github.com/nextentity/identity-codec)
-[![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 [![Java](https://img.shields.io/badge/java-25%2B-orange)](https://www.oracle.com/java/)
 
 ## 项目简介
@@ -21,7 +20,7 @@ Identity Codec 是一个高效的身份证明编码库，专门用于将18位中
 
 ### 核心组件
 
-```java
+```text
 // 主要接口
 IdentityCodec - 统一编码接口
 
@@ -60,32 +59,36 @@ IdentityCodecs          - 工厂类
 ### 2. 基础使用
 
 ```java
-// 创建基础编码器
-IdentityCodec codec = new SimpleIdentityCodec();
+void main() {
+    // 创建基础编码器
+    IdentityCodec codec = new SimpleIdentityCodec();
 
-// 编码身份证
-String idCard = "110105194912310021";
-long encoded = codec.encode(idCard);
-System.out.println("编码结果: " + encoded);
+    // 编码身份证
+    String idCard = "110105194912310021";
+    long encoded = codec.encode(idCard);
+    System.out.println("编码结果: " + encoded);
 
-// 解码身份证
-String decoded = codec.decode(encoded);
-System.out.println("解码结果: " + decoded);
+    // 解码身份证
+    String decoded = codec.decode(encoded);
+    System.out.println("解码结果: " + decoded);
+}
 ```
 
 ### 3. 加密编码
 
 ```java
-// 推荐使用工厂类创建加密编码器
-IdentityCodec encryptedCodec = IdentityCodecs.speck64Encrypt(new int[]{1, 2, 3, 4});
+void main() {
+    // 推荐使用工厂类创建加密编码器
+    IdentityCodec encryptedCodec = IdentityCodecs.speck64Encrypt(new int[]{1, 2, 3, 4});
 
-// 加密编码
-long encrypted = encryptedCodec.encode(idCard);
-System.out.println("加密编码: " + encrypted);
+    // 加密编码
+    long encrypted = encryptedCodec.encode(idCard);
+    System.out.println("加密编码: " + encrypted);
 
-// 解密解码
-String decrypted = encryptedCodec.decode(encrypted);
-System.out.println("解密结果: " + decrypted);
+    // 解密解码
+    String decrypted = encryptedCodec.decode(encrypted);
+    System.out.println("解密结果: " + decrypted);
+}
 ```
 
 ## 性能表现
@@ -158,14 +161,18 @@ SPECK64加密算法的具体实现，提供64位数据的加密解密功能。
 ### 异常处理
 
 ```java
-try {
-    long encoded = codec.encode(invalidIdCard);
-} catch (InvalidIdentityNumberException e) {
-    // 处理无效身份证格式
-    System.err.println("身份证格式错误: " + e.getMessage());
-} catch (InvalidEncodingException e) {
-    // 处理编码错误
-    System.err.println("编码错误: " + e.getMessage());
+void main() {
+    try {
+        long encoded = codec.encode(invalidIdCard);
+    } catch (InvalidIdentityNumberException e) {
+        // 处理无效身份证格式
+    }
+
+    try {
+        long encoded = codec.decode(invalidIdCard);
+    } catch (InvalidEncodingException e) {
+        // 处理编码错误
+    }
 }
 ```
 
@@ -210,10 +217,6 @@ mvn jacoco:report
 - 所有公共方法必须包含Javadoc注释
 - 单元测试覆盖率不低于80%
 - 提交前运行所有测试确保通过
-
-## 许可证
-
-本项目采用 MIT 许可证 - 查看 [LICENSE](LICENSE) 文件了解详情
 
 ---
 
