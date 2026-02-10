@@ -43,7 +43,7 @@ public class SimpleIdentityCodec implements IdentityCodec {
      */
     @Override
     public long encode(String identityNumber) {
-        IdentityCheckCodeCalculator.validate(identityNumber);
+        IdentityCardUtils.validate(identityNumber);
         // 1. 解析 18 位身份证号码各组成部分（不存储校验码）
         int administrativeCode = Integer.parseInt(identityNumber.substring(0, 6)); // 6 位地址码
         int birthYear = Integer.parseInt(identityNumber.substring(6, 10)); // 4 位年份
@@ -120,6 +120,6 @@ public class SimpleIdentityCodec implements IdentityCodec {
                 sequenceNumber); // 3位顺序码
 
         // 8. 返回完整的18位身份证号码
-        return IdentityCheckCodeCalculator.generateCompleteId(first17Chars);
+        return IdentityCardUtils.appendCheckCode(first17Chars);
     }
 }

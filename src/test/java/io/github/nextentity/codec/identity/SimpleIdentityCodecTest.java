@@ -400,24 +400,11 @@ public class SimpleIdentityCodecTest {
             if (version == 1) continue; // 跳过支持的版本
 
             long testData = version;
-            assertThrows(IllegalArgumentException.class, () ->
+            assertThrows(InvalidEncodingException.class, () ->
                     codec.decode(testData), "版本 " + version + " 应该抛出异常");
         }
         System.out.println("  ✓ 所有非1版本都正确抛出异常");
 
         System.out.println("不支持版本号异常处理测试完成");
-    }
-
-
-    static void main1() {
-        String number = "11010119900307";
-        for (int i = 100; i < 999; i++) {
-            String s = number + i ;
-            String s1 = IdentityCheckCodeCalculator.generateCompleteId(s);
-            if (s1.endsWith("X")) {
-                System.out.println(s1);
-                break;
-            }
-        }
     }
 }

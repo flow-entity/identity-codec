@@ -4,7 +4,7 @@ import java.time.DateTimeException;
 import java.time.LocalDate;
 
 /**
- * 身份证号码校验码计算器
+ * 身份证号码工具类
  * <p>
  * 根据国家标准 GB 11643-1999，18位身份证号码的最后一位是校验码，
  * 通过前17位数字按照特定算法计算得出。
@@ -12,7 +12,7 @@ import java.time.LocalDate;
  *
  * @version 1.0
  */
-public class IdentityCheckCodeCalculator {
+public class IdentityCardUtils {
 
     /**
      * 身份证号码校验码计算权重系数
@@ -29,30 +29,31 @@ public class IdentityCheckCodeCalculator {
     /**
      * 私有构造方法，防止实例化
      */
-    private IdentityCheckCodeCalculator() {
+    private IdentityCardUtils() {
         // 工具类，禁止实例化
     }
 
     /**
      * 计算18位身份证号码的校验码
      *
-     * @param identityNumber 18位身份证号码（前17位有效，第18位会被忽略）
+     * @param identityNumber 18位身份证号码或前17位（前17位有效，第18位会被忽略）
      * @return 计算得到的校验码字符（'0'-'9' 或 'X'）
      * @throws InvalidIdentityNumberException 当身份证号码格式不正确时抛出
      */
-    public static char calculate(String identityNumber) {
+    public static char calculateCheckCode(String identityNumber) {
         if (identityNumber == null || identityNumber.length() < 17 || identityNumber.length() > 18) {
-            throw new InvalidIdentityNumberException("ID number must be 18 digits");
+            throw new InvalidIdentityNumberException("Input number length must be 17 or 18");
         }
 
         // 计算前17位数字的加权和
         int sum = 0;
         for (int i = 0; i < 17; i++) {
             char c = identityNumber.charAt(i);
-            if (!Character.isDigit(c)) {
-                throw new InvalidIdentityNumberException("The first 17 digits of ID number must be numeric, illegal character at position: " + i);
-            }
             int digit = c - '0';
+            if (digit < 0 || digit > 9) {
+                throw new InvalidIdentityNumberException(
+                        "The first 17 digits of ID number must be numeric, illegal character at position: " + i);
+            }
             sum += digit * WEIGHTS[i];
         }
 
@@ -72,7 +73,7 @@ public class IdentityCheckCodeCalculator {
         try {
             validate(identityNumber);
             return true;
-        } catch (Exception e) {
+        } catch (InvalidIdentityNumberException e) {
             return false;
         }
     }
@@ -89,7 +90,7 @@ public class IdentityCheckCodeCalculator {
         }
 
         // 1. 校验码验证
-        char expected = calculate(identityNumber);
+        char expected = calculateCheckCode(identityNumber);
         char actual = Character.toUpperCase(identityNumber.charAt(17));
 
         if (expected != actual) {
@@ -128,13 +129,13 @@ public class IdentityCheckCodeCalculator {
      * @return 完整的18位身份证号码
      * @throws InvalidIdentityNumberException 当输入格式不正确时抛出
      */
-    public static String generateCompleteId(String first17Chars) {
+    public static String appendCheckCode(String first17Chars) {
         if (first17Chars == null || first17Chars.length() != 17) {
             throw new InvalidIdentityNumberException("Input must be 17 digits");
         }
 
         // 临时拼接一个占位符作为第18位，用于调用 calculate 方法
-        char checkCode = calculate(first17Chars);
+        char checkCode = calculateCheckCode(first17Chars);
 
         return first17Chars + checkCode;
     }
