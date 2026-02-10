@@ -294,8 +294,8 @@ public class SimpleIdentityCodecTest {
         int version = (int) (encoded & 0xFL);
         assertEquals(1, version, "版本号应该是1");
 
-        // 验证顺序码在[17-8]位
-        int sequence = (int) ((encoded >>> 8) & 0x3FFL);
+        // 验证顺序码在[13-4]位
+        int sequence = (int) ((encoded >>> 4) & 0x3FFL);
         assertEquals(2, sequence, "顺序码提取错误");
 
         logger.info("位域分配验证通过");

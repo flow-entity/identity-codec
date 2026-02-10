@@ -7,12 +7,12 @@ import java.time.temporal.ChronoUnit;
  * 简单身份编码器
  * 将 18 位身份证号码压缩为 64 位 long 类型
  * <pre>
- * 位域分配 (共 60 位):
- * [63-60]: 预留位 (4 位) - 保持为 0
- * [59-40]: 地址码 (20 位) - 行政区划代码
- * [39-18]: 天数偏移 (22 位) - 距离基准日期的天数
- * [17-8]:  顺序码 (10 位) - 同日出生人员序号
- * [3-0]:   版本号 (4 位) - 编码版本标识
+ * 位域分配 (共 56 位):
+ * [63-56]: 预留位 ( 8 位) - 保持为 0
+ * [55-36]: 地址码 (20 位) - 行政区划代码
+ * [35-14]: 天偏移 (22 位) - 距离基准日期的天数
+ * [13- 4]: 顺序码 (10 位) - 同日出生人员序号
+ * [ 3- 0]: 版本号 ( 4 位) - 编码版本标识
  * </pre>
  *
  * @version 1.0
@@ -33,11 +33,11 @@ public class SimpleIdentityCodec implements IdentityCodec {
      * 编码过程：
      * 1. 解析身份证各组成部分（地址码、出生日期、顺序码）
      * 2. 计算出生日期距离基准日期的天数偏移
-     * 3. 按预定义的位域结构组合成 60 位有效数据的 long 值（不存储校验码）
+     * 3. 按预定义的位域结构组合成 56 位有效数据的 long 值（不存储校验码）
      * </pre>
      *
      * @param identityNumber 18 位身份证号码字符串
-     * @return 编码后的 long 值（使用 60 位，高位预留4位为 0）
+     * @return 编码后的 long 值（使用 56 位，高位预留8位为 0）
      * @throws InvalidIdentityNumberException 当身份证格式不正确或出生日期超出范围时抛出
      * @see #decode(long)
      */
@@ -55,13 +55,13 @@ public class SimpleIdentityCodec implements IdentityCodec {
         LocalDate birthDate = LocalDate.of(birthYear, birthMonth, birthDay);
         long daysOffset = ChronoUnit.DAYS.between(BASE_DATE, birthDate);
 
-        // 3. 按位域结构组合各字段 (总共 60 位，不含校验码)
+        // 3. 按位域结构组合各字段 (总共 56 位，不含校验码)
         long encodedResult = 0L;
-        // 预留高位 [63-60] 保持为 0，确保兼容性
-        encodedResult |= ((long) administrativeCode & 0xFFFFFL) << 40; // 20 位地址码 -> [59-40] 位
-        encodedResult |= (daysOffset & 0x3FFFFFL) << 18; // 22 位天数偏移 -> [39-18] 位
-        encodedResult |= ((long) sequenceNumber & 0x3FFL) << 8; // 10 位顺序码 -> [17-8] 位
-        encodedResult |= (VERSION & 0xFL); // 4 位版本号 -> [3-0] 位 (最低位)
+        // 预留高位 [63-56] 保持为 0，确保兼容性
+        encodedResult |= ((long) administrativeCode & 0xFFFFFL) << 36; // 20 位地址码 -> [55-36] 位
+        encodedResult |= (daysOffset & 0x3FFFFFL) << 14;               // 22 位天偏移 -> [35-14] 位
+        encodedResult |= ((long) sequenceNumber & 0x3FFL) << 4;        // 10 位顺序码 -> [13- 4] 位
+        encodedResult |= (VERSION & 0xFL);                             //  4 位版本号 -> [ 3- 0] 位
         return encodedResult;
     }
 
@@ -91,16 +91,16 @@ public class SimpleIdentityCodec implements IdentityCodec {
             throw new InvalidEncodingException(InvalidEncodingException.ErrorCode.UNSUPPORTED_VERSION, String.valueOf(version));
         }
 
-        // 3. 校验预留位是否为0 ([63-60] 位)
-        long reservedBits = (encoded >>> 60) & 0xFL;
+        // 3. 校验预留位是否为0 ([63-56] 位)
+        long reservedBits = (encoded >>> 56) & 0xFF;
         if (reservedBits != 0) {
             throw new InvalidEncodingException(InvalidEncodingException.ErrorCode.RESERVED_BITS_NOT_ZERO, String.valueOf(reservedBits));
         }
 
         // 4. 按位域分别提取各字段（不包含校验码）
-        int administrativeCode = (int) ((encoded >>> 40) & 0xFFFFFL); // 提取20位地址码 [59-40]
-        long daysOffset = (encoded >>> 18) & 0x3FFFFFL; // 提取22位天数 [39-18]
-        int sequenceNumber = (int) ((encoded >>> 8) & 0x3FFL); // 提取10位顺序码 [17-8]
+        int administrativeCode = (int) ((encoded >>> 36) & 0xFFFFFL); // 提取20位地址码 [55-36]
+        long daysOffset = (encoded >>> 14) & 0x3FFFFFL; // 提取22位天数 [35-14]
+        int sequenceNumber = (int) ((encoded >>> 4) & 0x3FFL); // 提取10位顺序码 [13-4]
 
         // 5. 根据天数偏移计算出生日期
         LocalDate birthDate = BASE_DATE.plusDays(daysOffset);
