@@ -107,10 +107,7 @@ public class SimpleIdentityCodec implements IdentityCodec {
                 birthDate.getDayOfMonth(), // 2位日期
                 sequenceNumber); // 3位顺序码
 
-        // 6. 计算校验码
-        char checkDigit = IdentityCheckCodeCalculator.calculate(first17Chars + "0");
-
-        // 7. 返回完整的18位身份证号码
-        return first17Chars + checkDigit;
+        // 6. 返回完整的18位身份证号码
+        return IdentityCheckCodeCalculator.generateCompleteId(first17Chars);
     }
 }

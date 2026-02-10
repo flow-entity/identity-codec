@@ -1,5 +1,8 @@
 package io.github.nextentity.codec.identity;
 
+import java.time.DateTimeException;
+import java.time.LocalDate;
+
 /**
  * 身份证号码校验码计算器
  * <p>
@@ -38,7 +41,7 @@ public class IdentityCheckCodeCalculator {
      * @throws InvalidIdentityNumberException 当身份证号码格式不正确时抛出
      */
     public static char calculate(String identityNumber) {
-        if (identityNumber == null || identityNumber.length() != 18) {
+        if (identityNumber == null || identityNumber.length() < 17 || identityNumber.length() > 18) {
             throw new InvalidIdentityNumberException("ID number must be 18 digits");
         }
 
@@ -66,19 +69,12 @@ public class IdentityCheckCodeCalculator {
      * @throws InvalidIdentityNumberException 当身份证号码格式不正确时抛出
      */
     public static boolean isValid(String identityNumber) {
-        if (identityNumber == null || identityNumber.length() != 18) {
-            throw new InvalidIdentityNumberException("ID number must be 18 digits");
+        try {
+            validate(identityNumber);
+            return true;
+        } catch (Exception e) {
+            return false;
         }
-
-        char expectedCheckCode = calculate(identityNumber);
-        char actualCheckCode = Character.toUpperCase(identityNumber.charAt(17));
-
-        boolean valid = expectedCheckCode == actualCheckCode;
-        if (!valid) {
-            System.out.println("Expected check code: " + expectedCheckCode);
-            System.out.println("Actual check code: " + actualCheckCode);
-        }
-        return valid;
     }
 
     /**
@@ -88,8 +84,36 @@ public class IdentityCheckCodeCalculator {
      * @throws InvalidIdentityNumberException 当身份证号码格式不正确或校验码不正确时抛出
      */
     public static void validate(String identityNumber) {
-        if (!isValid(identityNumber)) {
+        if (identityNumber == null || identityNumber.length() != 18) {
+            throw new InvalidIdentityNumberException("ID number must be 18 digits");
+        }
+
+        // 1. 校验码验证
+        char expectedCheckCode = calculate(identityNumber);
+        char actualCheckCode = Character.toUpperCase(identityNumber.charAt(17));
+
+        if (expectedCheckCode != actualCheckCode) {
             throw new InvalidIdentityNumberException("ID number check code is invalid");
+        }
+
+        // 2. 日期格式和有效性验证
+        try {
+            int birthYear = Integer.parseInt(identityNumber.substring(6, 10));
+            int birthMonth = Integer.parseInt(identityNumber.substring(10, 12));
+            int birthDay = Integer.parseInt(identityNumber.substring(12, 14));
+
+            if (birthMonth < 1 || birthMonth > 12) {
+                throw new InvalidIdentityNumberException("ID number birth month is invalid");
+            }
+            if (birthDay < 1 || birthDay > 31) {
+                throw new InvalidIdentityNumberException("ID number birth day is invalid");
+            }
+
+            // 详细日期验证（包括闰年、每月天数等）
+            var _ = LocalDate.of(birthYear, birthMonth, birthDay);
+
+        } catch (NumberFormatException | DateTimeException e) {
+            throw new InvalidIdentityNumberException("ID number birth date is invalid");
         }
     }
 
@@ -106,8 +130,7 @@ public class IdentityCheckCodeCalculator {
         }
 
         // 临时拼接一个占位符作为第18位，用于调用 calculate 方法
-        String tempId = first17Chars + "0";
-        char checkCode = calculate(tempId);
+        char checkCode = calculate(first17Chars);
 
         return first17Chars + checkCode;
     }

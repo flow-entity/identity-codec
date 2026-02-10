@@ -1,5 +1,7 @@
 package io.github.nextentity.codec.identity;
 
+import java.util.Objects;
+
 /**
  * 加密身份编码器
  * 结合 SimpleIdentityCodec 的身份编码功能和 XorEncryptor 的加密功能
@@ -17,11 +19,11 @@ public class EncryptedIdentityCodec implements IdentityCodec {
     /**
      * 身份编码器实例
      */
-    private final SimpleIdentityCodec identityCodec;
+    private final IdentityCodec identityCodec;
     /**
      * XOR 加密器实例
      */
-    private final XorEncryptor xorEncryptor;
+    private final Encryptor xorEncryptor;
 
     /**
      * 构造函数 - 使用指定的加密密钥
@@ -30,8 +32,12 @@ public class EncryptedIdentityCodec implements IdentityCodec {
      * @throws IllegalArgumentException 当密钥无效时抛出
      */
     public EncryptedIdentityCodec(long encryptionKey) {
-        this.identityCodec = new SimpleIdentityCodec();
-        this.xorEncryptor = new XorEncryptor(encryptionKey);
+        this(new SimpleIdentityCodec(), new XorEncryptor(encryptionKey));
+    }
+
+    public EncryptedIdentityCodec(IdentityCodec identityCodec, Encryptor xorEncryptor) {
+        this.identityCodec = Objects.requireNonNull(identityCodec, "identityCodec");
+        this.xorEncryptor = Objects.requireNonNull(xorEncryptor, "xorEncryptor");
     }
 
     /**
@@ -79,7 +85,7 @@ public class EncryptedIdentityCodec implements IdentityCodec {
      *
      * @return SimpleIdentityCodec 实例
      */
-    SimpleIdentityCodec getIdentityCodec() {
+    IdentityCodec getIdentityCodec() {
         return identityCodec;
     }
 
@@ -88,7 +94,7 @@ public class EncryptedIdentityCodec implements IdentityCodec {
      *
      * @return XorEncryptor 实例
      */
-    XorEncryptor getXorEncryptor() {
+    Encryptor getXorEncryptor() {
         return xorEncryptor;
     }
 }

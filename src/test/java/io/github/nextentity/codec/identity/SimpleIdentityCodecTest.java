@@ -240,7 +240,7 @@ public class SimpleIdentityCodecTest {
     @Test
     void testBirthDateOutOfRange() {
         // 此测试验证日期范围检查
-        // 由于24位天数偏移支持非常大的日期范围（约45000年）
+        // 由于22位天数偏移支持非常大的日期范围（约11485年）
         // 对于四位数年份的身份证，不会超出范围
         // 这里主要测试无效的日期格式
 

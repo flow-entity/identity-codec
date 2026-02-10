@@ -10,11 +10,13 @@ package io.github.nextentity.codec.identity;
  * - 性能优异，适合高频调用场景
  * - 安全性依赖于密钥的保密性
  * </pre>
- * 
+ *
  * @version 1.0
  */
-public class XorEncryptor {
-    /** 64位加密密钥 */
+public class XorEncryptor implements Encryptor {
+    /**
+     * 64位加密密钥
+     */
     private final long encryptionKey;
 
     /**
@@ -34,6 +36,7 @@ public class XorEncryptor {
      * @param plaintextData 待加密的原始数据
      * @return 加密后的数据
      */
+    @Override
     public long encrypt(long plaintextData) {
         return plaintextData ^ encryptionKey;
     }
@@ -45,6 +48,7 @@ public class XorEncryptor {
      * @param encryptedData 待解密的密文数据
      * @return 解密后的明文数据
      */
+    @Override
     public long decrypt(long encryptedData) {
         return encryptedData ^ encryptionKey;
     }
