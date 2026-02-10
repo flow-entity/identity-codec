@@ -27,7 +27,7 @@ public class EncryptedIdentityCodecTest {
      */
     @Test
     void testEncryptDecryptBasic() {
-        String idCard = "110105194912310021";
+        String idCard = "11010519491231002X";
 
         // 加密编码
         long encrypted = encryptedCodec.encode(idCard);
@@ -48,7 +48,7 @@ public class EncryptedIdentityCodecTest {
      */
     @Test
     void testEncryptionEffect() {
-        String idCard = "110105194912310021";
+        String idCard = "11010519491231002X";
         SimpleIdentityCodec simpleCodec = new SimpleIdentityCodec();
 
         // 普通编码
@@ -69,7 +69,7 @@ public class EncryptedIdentityCodecTest {
      */
     @Test
     void testDifferentKeys() {
-        String idCard = "110105194912310021";
+        String idCard = "11010519491231002X";
 
         // 使用不同密钥的编码器
         long key1 = 0x0102030405060708L;
@@ -99,10 +99,10 @@ public class EncryptedIdentityCodecTest {
     @Test
     void testMultipleIdCards() {
         String[] testIds = {
-                "110101199001011234",
+                "110101199001011237",
                 "310101198506152345",
-                "440101198012123456",
-                "510101197503214567"
+                "440101198012123455",
+                "510101197503214566"
         };
 
         for (String id : testIds) {
@@ -117,7 +117,7 @@ public class EncryptedIdentityCodecTest {
      */
     @Test
     void testEncryptionConsistency() {
-        String idCard = "110105194912310021";
+        String idCard = "11010519491231002X";
 
         // 多次加密应该得到相同结果
         long encrypted1 = encryptedCodec.encode(idCard);
@@ -134,10 +134,10 @@ public class EncryptedIdentityCodecTest {
     @Test
     void testEncryptedPerformance() {
         String[] testIds = {
-                "110101199001011234",
-                "110101198506152345",
-                "110101200012123456",
-                "110101197503214567",
+                "110101199001011237",
+                "110101198506152348",
+                "110101200012123459",
+                "110101197503214561",
                 "110101196008155678"
         };
 
@@ -163,7 +163,7 @@ public class EncryptedIdentityCodecTest {
      */
     @Test
     void testCompatibilityWithSimpleCodec() {
-        String idCard = "110105194912310021";
+        String idCard = "11010519491231002X";
         SimpleIdentityCodec simpleCodec = new SimpleIdentityCodec();
 
         // 先用SimpleIdentityCodec编码，再手动加密解密验证流程
