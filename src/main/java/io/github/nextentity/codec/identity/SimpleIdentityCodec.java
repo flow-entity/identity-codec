@@ -88,13 +88,13 @@ public class SimpleIdentityCodec implements IdentityCodec {
 
         // 2. Version routing check (currently only supports version 1)
         if (version != 1) {
-            throw new InvalidEncodingException("Unsupported compression version: " + version);
+            throw new InvalidEncodingException(InvalidEncodingException.ErrorCode.UNSUPPORTED_VERSION, String.valueOf(version));
         }
 
         // 3. 校验预留位是否为0 ([63-60] 位)
         long reservedBits = (encoded >>> 60) & 0xFL;
         if (reservedBits != 0) {
-            throw new InvalidEncodingException("Reserved bits must be zero, but got: " + reservedBits);
+            throw new InvalidEncodingException(InvalidEncodingException.ErrorCode.RESERVED_BITS_NOT_ZERO, String.valueOf(reservedBits));
         }
 
         // 4. 按位域分别提取各字段（不包含校验码）
@@ -108,7 +108,7 @@ public class SimpleIdentityCodec implements IdentityCodec {
         // 6. 校验年份是否为四位数（年份应在 0000-9999 范围内）
         int birthYear = birthDate.getYear();
         if (birthYear < 0 || birthYear > 9999) {
-            throw new InvalidEncodingException("Birth year must be a 4-digit number, but got: " + birthYear);
+            throw new InvalidEncodingException(InvalidEncodingException.ErrorCode.INVALID_BIT_FIELD, "Birth year out of range: " + birthYear);
         }
 
         // 7. 组装前17位，然后计算校验码

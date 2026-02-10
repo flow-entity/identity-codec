@@ -55,6 +55,11 @@ public class Speck64Encryptor implements Encryptor {
      */
     private final int[] key;
 
+    /**
+     * 预计算的加密轮密钥
+     * 在构造函数中生成，加密时直接使用，避免重复计算
+     */
+    private final int[] roundKeys;
 
     /**
      * 字节数组构造函数
@@ -122,12 +127,32 @@ public class Speck64Encryptor implements Encryptor {
         this.alpha = alpha;
         this.beta = beta;
         this.key = key;
+        this.roundKeys = generateRoundKeys();
     }
 
     private static void checkKeyLength(int[] key) {
         if (key.length != 4) {
             throw new IllegalArgumentException("SPECK64/128 requires exactly 4 integers (128 bits) as key");
         }
+    }
+
+    /**
+     * 预生成所有轮密钥
+     * 在构造函数中调用一次，避免每次加密/解密时重复计算
+     *
+     * @return 轮密钥数组
+     */
+    private int[] generateRoundKeys() {
+        int[] schedule = new int[key.length - 1];
+        int[] round = new int[rounds];
+        System.arraycopy(key, 0, schedule, 0, key.length - 1);
+        round[0] = key[key.length - 1];
+
+        for (int i = 0; i < rounds - 1; i++) {
+            schedule[i % schedule.length] = (ror(schedule[i % schedule.length], alpha) + round[i]) ^ i;
+            round[i + 1] = rol(round[i], beta) ^ schedule[i % schedule.length];
+        }
+        return round;
     }
 
     /**
@@ -154,29 +179,13 @@ public class Speck64Encryptor implements Encryptor {
         int high = (int) (plaintext >> 32);
         int low = (int) (plaintext & 0xFFFFFFFFL);
 
-        // 密钥扩展 (Key Schedule)
-        // schedule存储密钥调度过程中的中间值
-        int[] schedule = new int[key.length - 1];
-        // round 存储每轮使用的子密钥
-        int[] round = new int[rounds];
-        System.arraycopy(key, 0, schedule, 0, key.length - 1);
-        round[0] = key[key.length - 1];
-
         // 加密循环 - 执行指定轮数的Feistel变换
         for (int i = 0; i < rounds; i++) {
             // 轮函数 - SPECK的核心变换
             // 1. 高位右旋转并与低位相加，再与子密钥异或
-            high = (ror(high, alpha) + low) ^ round[i];
+            high = (ror(high, alpha) + low) ^ roundKeys[i];
             // 2. 低位左旋转并与新的高位异或
             low = rol(low, beta) ^ high;
-
-            // 生成下一轮子密钥 - 密钥调度算法
-            if (i < rounds - 1) {
-                // 更新调度中间值：右旋转 + 异或轮索引
-                schedule[i % schedule.length] = (ror(schedule[i % schedule.length], alpha) + round[i]) ^ i;
-                // 生成下一轮子密钥：左旋转 + 异或调度值
-                round[i + 1] = rol(round[i], beta) ^ schedule[i % schedule.length];
-            }
         }
 
         return ((long) high << 32) | (low & 0xFFFFFFFFL);
@@ -190,8 +199,8 @@ public class Speck64Encryptor implements Encryptor {
      *
      * <p>解密流程：
      * <pre>
-     * 1. 重新生成所有轮密钥
-     * 2. 按照相反顺序执行27轮逆向变换
+     * 1. 使用预计算的轮密钥（构造函数中生成）
+     * 2. 按照相反顺序执行轮逆向变换
      * 3. 每轮应用逆向轮函数
      * 4. 返回64位明文
      * </pre>
@@ -205,22 +214,10 @@ public class Speck64Encryptor implements Encryptor {
         int high = (int) (ciphertext >> 32);
         int low = (int) (ciphertext & 0xFFFFFFFFL);
 
-        // 重新生成子密钥 (解密需要反向使用)
-        // 解密时需要按相反顺序使用相同的子密钥序列
-        int[] schedule = new int[key.length - 1];
-        int[] round = new int[rounds];
-        System.arraycopy(key, 0, schedule, 0, key.length - 1);
-        round[0] = key[key.length - 1];
-
-        for (int i = 0; i < rounds - 1; i++) {
-            schedule[i % schedule.length] = (ror(schedule[i % schedule.length], alpha) + round[i]) ^ i;
-            round[i + 1] = rol(round[i], beta) ^ schedule[i % schedule.length];
-        }
-
         // 反向加密循环 - 按相反顺序执行轮函数
         for (int i = rounds - 1; i >= 0; i--) {
             low = ror(low ^ high, beta);
-            high = rol((high ^ round[i]) - low, alpha);
+            high = rol((high ^ roundKeys[i]) - low, alpha);
         }
 
         return ((long) high << 32) | (low & 0xFFFFFFFFL);

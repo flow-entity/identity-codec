@@ -1,6 +1,5 @@
 package io.github.nextentity.codec.identity;
 
-import java.time.DateTimeException;
 import java.time.LocalDate;
 
 /**
@@ -42,7 +41,7 @@ public class IdentityCardUtils {
      */
     public static char calculateCheckCode(String identityNumber) {
         if (identityNumber == null || identityNumber.length() < 17 || identityNumber.length() > 18) {
-            throw new InvalidIdentityNumberException("Input number length must be 17 or 18");
+            throw new InvalidIdentityNumberException(InvalidIdentityNumberException.ErrorCode.INVALID_LENGTH, "Input length must be 17 or 18");
         }
 
         // 计算前17位数字的加权和
@@ -51,8 +50,8 @@ public class IdentityCardUtils {
             char c = identityNumber.charAt(i);
             int digit = c - '0';
             if (digit < 0 || digit > 9) {
-                throw new InvalidIdentityNumberException(
-                        "The first 17 digits of ID number must be numeric, illegal character at position: " + i);
+                throw new InvalidIdentityNumberException(InvalidIdentityNumberException.ErrorCode.INVALID_CHARACTER,
+                        "Non-numeric character at position " + i + ": " + c);
             }
             sum += digit * WEIGHTS[i];
         }
@@ -86,7 +85,7 @@ public class IdentityCardUtils {
      */
     public static void validate(String identityNumber) {
         if (identityNumber == null || identityNumber.length() != 18) {
-            throw new InvalidIdentityNumberException("ID number must be 18 digits");
+            throw new InvalidIdentityNumberException(InvalidIdentityNumberException.ErrorCode.INVALID_LENGTH, "ID number must be exactly 18 digits");
         }
 
         // 1. 校验码验证
@@ -94,11 +93,8 @@ public class IdentityCardUtils {
         char actual = Character.toUpperCase(identityNumber.charAt(17));
 
         if (expected != actual) {
-            throw new InvalidIdentityNumberException(String.format(
-                    "ID number check code is invalid: expected '%c', actual '%c'",
-                    expected,
-                    actual
-            ));
+            throw new InvalidIdentityNumberException(InvalidIdentityNumberException.ErrorCode.INVALID_CHECK_CODE,
+                    String.format("Expected '%c', actual '%c'", expected, actual));
         }
 
         // 2. 日期格式和有效性验证
@@ -108,17 +104,23 @@ public class IdentityCardUtils {
             int day = Integer.parseInt(identityNumber.substring(12, 14));
 
             if (month < 1 || month > 12) {
-                throw new InvalidIdentityNumberException("ID number birth month is invalid");
+                throw new InvalidIdentityNumberException(InvalidIdentityNumberException.ErrorCode.INVALID_MONTH,
+                        "Invalid month value: " + month);
             }
             if (day < 1 || day > 31) {
-                throw new InvalidIdentityNumberException("ID number birth day is invalid");
+                throw new InvalidIdentityNumberException(InvalidIdentityNumberException.ErrorCode.INVALID_DAY,
+                        "Invalid day value: " + day);
             }
 
             // 详细日期验证（包括闰年、每月天数等）
-            var _ = LocalDate.of(year, month, day);
+            LocalDate birthDate = LocalDate.of(year, month, day);
 
-        } catch (NumberFormatException | DateTimeException e) {
-            throw new InvalidIdentityNumberException("ID number birth date is invalid", e);
+        } catch (NumberFormatException e) {
+            throw new InvalidIdentityNumberException(InvalidIdentityNumberException.ErrorCode.INVALID_DATE,
+                    "Failed to parse birth date", e);
+        } catch (java.time.DateTimeException e) {
+            throw new InvalidIdentityNumberException(InvalidIdentityNumberException.ErrorCode.INVALID_DATE,
+                    "Invalid birth date value", e);
         }
     }
 
@@ -131,7 +133,8 @@ public class IdentityCardUtils {
      */
     public static String appendCheckCode(String first17Chars) {
         if (first17Chars == null || first17Chars.length() != 17) {
-            throw new InvalidIdentityNumberException("Input must be 17 digits");
+            throw new InvalidIdentityNumberException(InvalidIdentityNumberException.ErrorCode.INVALID_LENGTH,
+                    "Input must be exactly 17 digits");
         }
 
         // 临时拼接一个占位符作为第18位，用于调用 calculate 方法

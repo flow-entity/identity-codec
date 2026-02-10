@@ -125,8 +125,8 @@ public class IdentityCardUtilsTest {
                 () -> IdentityCardUtils.validate(invalidId),
                 "错误的校验码应该抛出异常");
 
-        assertTrue(exception.getMessage().contains("check code is invalid"),
-                "异常消息应该包含校验码错误信息");
+        assertTrue(exception.getMessage().contains("IIN-002") || exception.getMessage().contains("check code is invalid"),
+                "异常消息应该包含校验码错误信息: " + exception.getMessage());
 
         logger.info("校验失败异常消息: {}", exception.getMessage());
     }

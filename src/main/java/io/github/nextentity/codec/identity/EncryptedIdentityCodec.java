@@ -74,7 +74,7 @@ public class EncryptedIdentityCodec implements IdentityCodec {
      * <pre>
      * 编码过程：
      * 1. 使用SimpleIdentityCodec将身份证编码为long值
-     * 2. 直接使用XOR加密器对long值进行加密
+     * 2. 使用加密器对long值进行加密
      * </pre>
      *
      * @param identityNumber 18位身份证号码字符串
@@ -93,7 +93,7 @@ public class EncryptedIdentityCodec implements IdentityCodec {
      * 将加密编码的long值解密为18位身份证号码
      * <pre>
      * 解码过程：
-     * 1. 使用XOR加密器对加密的long值进行解密
+     * 1. 使用加密器对加密的long值进行解密
      * 2. 使用SimpleIdentityCodec将解密后的long值解码为身份证号码
      * </pre>
      *
