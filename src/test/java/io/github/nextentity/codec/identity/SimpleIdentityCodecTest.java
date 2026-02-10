@@ -110,7 +110,7 @@ public class SimpleIdentityCodecTest {
         String[] boundaryTestCases = {
                 "110101000101010011", // 基准日期 - 最小边界 (公元元年)
                 "11010100010101109X", // 基准日期带X校验码
-                "110101999912319991"  // 接近公元1000年
+                "110101999912319991"  // 接近公元9999年
         };
 
         logger.info("=== 边界日期处理测试 ===");
@@ -132,13 +132,7 @@ public class SimpleIdentityCodecTest {
 
             } catch (Exception e) {
                 logger.warn("  ✗ 处理异常: {}", e.getMessage());
-                // 对于超出范围的日期，验证是否正确抛出异常
-                if (testCase.equals("110101999912319999")) {
-                    // 这个日期应该在正常范围内
-                    fail("公元999年的日期应该在范围内: " + e.getMessage());
-                } else {
-                    fail("意外的异常: " + e.getMessage());
-                }
+                fail("边界日期处理异常: " + e.getMessage());
             }
         }
 

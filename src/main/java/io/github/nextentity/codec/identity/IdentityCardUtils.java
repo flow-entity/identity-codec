@@ -117,9 +117,6 @@ public class IdentityCardUtils {
             // 详细日期验证（包括闰年、每月天数等）
             var _ = LocalDate.of(year, month, day);
 
-        } catch (NumberFormatException e) {
-            throw new InvalidIdentityNumberException(InvalidIdentityNumberException.ErrorCode.INVALID_DATE,
-                    "Failed to parse birth date", e);
         } catch (DateTimeException e) {
             throw new InvalidIdentityNumberException(InvalidIdentityNumberException.ErrorCode.INVALID_DATE,
                     "Invalid birth date value", e);

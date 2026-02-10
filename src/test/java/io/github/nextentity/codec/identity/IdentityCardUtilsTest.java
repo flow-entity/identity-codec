@@ -79,32 +79,32 @@ public class IdentityCardUtilsTest {
 
         // 非闰年2月29日（应该失败）
         String nonLeapYearFirst17 = "11010519990229002";
-        String nonLeapYearId = nonLeapYearFirst17 + IdentityCardUtils.calculateCheckCode(nonLeapYearFirst17 + " "); // 手动构造，校验码会是错的，但日期无效
+        String nonLeapYearId = nonLeapYearFirst17 + IdentityCardUtils.calculateCheckCode(nonLeapYearFirst17);
         assertFalse(IdentityCardUtils.isValid(nonLeapYearId),
                 "非闰年2月29日应该验证失败: " + nonLeapYearId);
 
         // 4月31日（应该失败）
         String invalidDayFirst17 = "11010519900431002";
-        String invalidDayId = invalidDayFirst17 + IdentityCardUtils.calculateCheckCode(invalidDayFirst17 + " "); // 手动构造
+        String invalidDayId = invalidDayFirst17 + IdentityCardUtils.calculateCheckCode(invalidDayFirst17);
         assertFalse(IdentityCardUtils.isValid(invalidDayId),
                 "4月31日应该验证失败: " + invalidDayId);
 
         // 无效月份
         String invalidMonthFirst17 = "11010519901301002";
-        String invalidMonthId = invalidMonthFirst17 + IdentityCardUtils.calculateCheckCode(invalidMonthFirst17 + " "); // 手动构造
+        String invalidMonthId = invalidMonthFirst17 + IdentityCardUtils.calculateCheckCode(invalidMonthFirst17);
         assertFalse(IdentityCardUtils.isValid(invalidMonthId),
                 "13月应该验证失败: " + invalidMonthId);
 
 
         // 无效月份
         String invalidMonthFirst17_2 = "11010519900001002";
-        String invalidMonthId_2 = invalidMonthFirst17_2 + IdentityCardUtils.calculateCheckCode(invalidMonthFirst17_2 + " "); // 手动构造
+        String invalidMonthId_2 = invalidMonthFirst17_2 + IdentityCardUtils.calculateCheckCode(invalidMonthFirst17_2);
         assertFalse(IdentityCardUtils.isValid(invalidMonthId_2),
                 "00月应该验证失败: " + invalidMonthId_2);
 
         // 无效的日
         String zeroDayFirst17 = "11010519901200002";
-        String zeroDayId = zeroDayFirst17 + IdentityCardUtils.calculateCheckCode(zeroDayFirst17 + " "); // 手动构造
+        String zeroDayId = zeroDayFirst17 + IdentityCardUtils.calculateCheckCode(zeroDayFirst17);
         assertFalse(IdentityCardUtils.isValid(zeroDayId),
                 "0日应该验证失败: " + zeroDayId);
     }
