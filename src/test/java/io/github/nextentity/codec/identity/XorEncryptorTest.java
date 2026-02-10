@@ -1,4 +1,4 @@
-package io.github.nextentity;
+package io.github.nextentity.codec.identity;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

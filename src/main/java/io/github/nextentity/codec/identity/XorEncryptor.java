@@ -1,4 +1,4 @@
-package io.github.nextentity;
+package io.github.nextentity.codec.identity;
 
 /**
  * XOR加密器

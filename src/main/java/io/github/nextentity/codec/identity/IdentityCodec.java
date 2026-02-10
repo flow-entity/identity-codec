@@ -1,4 +1,4 @@
-package io.github.nextentity;
+package io.github.nextentity.codec.identity;
 
 /**
  * 身份编码器接口

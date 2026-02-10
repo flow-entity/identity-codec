@@ -1,4 +1,4 @@
-package io.github.nextentity;
+package io.github.nextentity.codec.identity;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
