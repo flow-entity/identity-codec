@@ -243,7 +243,7 @@ public class Speck64EncryptorTest {
 
         long startTime = System.nanoTime();
 
-        for (int i = 0; i < 1000; i++) {
+        for (int i = 0; i < 1000000; i++) {
             for (long data : testData) {
                 long encrypted = encryptor.encrypt(data);
                 long decrypted = encryptor.decrypt(encrypted);

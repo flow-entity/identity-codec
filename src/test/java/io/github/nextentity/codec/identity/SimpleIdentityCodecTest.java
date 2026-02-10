@@ -316,7 +316,7 @@ public class SimpleIdentityCodecTest {
 
         long startTime = System.nanoTime();
 
-        for (int i = 0; i < 1000; i++) {
+        for (int i = 0; i < 1000000; i++) {
             for (String id : testIds) {
                 long encoded = codec.encode(id);
                 String decoded = codec.decode(encoded);

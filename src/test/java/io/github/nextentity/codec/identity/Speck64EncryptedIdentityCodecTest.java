@@ -104,7 +104,7 @@ public class Speck64EncryptedIdentityCodecTest {
     @Test
     void testInvalidInput() {
         // 测试null输入
-        assertThrows(IllegalArgumentException.class, () -> encryptedCodec.encode(null));
+        assertThrows(NullPointerException.class, () -> encryptedCodec.encode(null));
 
         // 测试无效身份证格式
         assertThrows(IllegalArgumentException.class, () -> encryptedCodec.encode("123"));
@@ -145,7 +145,7 @@ public class Speck64EncryptedIdentityCodecTest {
         long startTime = System.nanoTime();
 
         // 批量处理
-        for (int i = 0; i < 1000; i++) {
+        for (int i = 0; i < 1000000; i++) {
             for (String id : testIds) {
                 long encoded = encryptedCodec.encode(id);
                 String decoded = encryptedCodec.decode(encoded);

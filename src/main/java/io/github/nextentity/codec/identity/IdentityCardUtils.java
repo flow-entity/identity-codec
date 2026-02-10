@@ -1,7 +1,9 @@
 package io.github.nextentity.codec.identity;
 
+import java.nio.charset.StandardCharsets;
 import java.time.DateTimeException;
 import java.time.LocalDate;
+import java.util.Objects;
 
 /**
  * 身份证号码工具类
@@ -40,23 +42,25 @@ public class IdentityCardUtils {
      * @throws InvalidIdentityNumberException 当身份证号码格式不正确时抛出
      */
     public static char calculateCheckCode(String identityNumber) {
-        if (identityNumber == null || identityNumber.length() < 17 || identityNumber.length() > 18) {
+        byte[] chars = Objects.requireNonNull(identityNumber).getBytes(StandardCharsets.ISO_8859_1);
+        return calculateCheckCode(chars);
+    }
+
+    public static char calculateCheckCode(byte[] chars) {
+        if (chars.length < 17 || chars.length > 18) {
             throw new InvalidIdentityNumberException(InvalidIdentityNumberException.ErrorCode.INVALID_LENGTH, "Input length must be 17 or 18");
         }
 
-        // 计算前17位数字的加权和
         int sum = 0;
         for (int i = 0; i < 17; i++) {
-            char c = identityNumber.charAt(i);
-            int digit = c - '0';
+            int digit = chars[i] - '0';
             if (digit < 0 || digit > 9) {
                 throw new InvalidIdentityNumberException(InvalidIdentityNumberException.ErrorCode.INVALID_CHARACTER,
-                        "Non-numeric character at position " + i + ": " + c);
+                        "Non-numeric character at position " + i + ": " + chars[i]);
             }
             sum += digit * WEIGHTS[i];
         }
 
-        // 计算余数并查表得到校验码
         int remainder = sum % 11;
         return CHECK_CODES[remainder];
     }
@@ -71,7 +75,7 @@ public class IdentityCardUtils {
         try {
             validate(identityNumber);
             return true;
-        } catch (InvalidIdentityNumberException e) {
+        } catch (InvalidIdentityNumberException | NullPointerException e) {
             return false;
         }
     }
@@ -83,32 +87,42 @@ public class IdentityCardUtils {
      * @throws InvalidIdentityNumberException 当身份证号码格式不正确或校验码不正确时抛出
      */
     public static void validate(String identityNumber) {
-        if (identityNumber == null || identityNumber.length() != 18) {
+        byte[] bytes = Objects.requireNonNull(identityNumber).getBytes(StandardCharsets.ISO_8859_1);
+        validate(bytes);
+    }
+
+    public static void validate(byte[] bytes) {
+        if (bytes.length != 18) {
             throw new InvalidIdentityNumberException(InvalidIdentityNumberException.ErrorCode.INVALID_LENGTH, "ID number must be exactly 18 digits");
         }
 
-        // 1. 校验码验证
-        char expected = calculateCheckCode(identityNumber);
-        char actual = Character.toUpperCase(identityNumber.charAt(17));
+        char expected = calculateCheckCode(bytes);
+        char actual = Character.toUpperCase((char) (bytes[17] & 0xFF));
 
         if (expected != actual) {
             throw new InvalidIdentityNumberException(InvalidIdentityNumberException.ErrorCode.INVALID_CHECK_CODE,
                     String.format("Expected '%c', actual '%c'", expected, actual));
         }
 
-        // 2. 日期格式和有效性验证
         try {
-            int year = Integer.parseInt(identityNumber.substring(6, 10));
-            int month = Integer.parseInt(identityNumber.substring(10, 12));
-            int day = Integer.parseInt(identityNumber.substring(12, 14));
+            int year = parseInt(bytes, 6, 10);
+            int month = parseInt(bytes, 10, 12);
+            int day = parseInt(bytes, 12, 14);
 
-            // 详细日期验证（包括闰年、每月天数等）
             var _ = LocalDate.of(year, month, day);
 
         } catch (DateTimeException e) {
             throw new InvalidIdentityNumberException(InvalidIdentityNumberException.ErrorCode.INVALID_DATE,
                     "Invalid birth date value", e);
         }
+    }
+
+    public static int parseInt(byte[] str, int start, int end) {
+        int result = 0;
+        for (int i = start; i < end; i++) {
+            result = result * 10 + (str[i] - '0');
+        }
+        return result;
     }
 
     /**

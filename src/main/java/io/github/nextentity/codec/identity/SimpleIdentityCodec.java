@@ -1,5 +1,6 @@
 package io.github.nextentity.codec.identity;
 
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 
@@ -43,13 +44,14 @@ public class SimpleIdentityCodec implements IdentityCodec {
      */
     @Override
     public long encode(String identityNumber) {
-        IdentityCardUtils.validate(identityNumber);
+        byte[] bytes = identityNumber.getBytes(StandardCharsets.ISO_8859_1);
+        IdentityCardUtils.validate(bytes);
         // 1. 解析 18 位身份证号码各组成部分（不存储校验码）
-        int administrativeCode = Integer.parseInt(identityNumber.substring(0, 6)); // 6 位地址码
-        int birthYear = Integer.parseInt(identityNumber.substring(6, 10)); // 4 位年份
-        int birthMonth = Integer.parseInt(identityNumber.substring(10, 12)); // 2 位月份
-        int birthDay = Integer.parseInt(identityNumber.substring(12, 14)); // 2 位日期
-        int sequenceNumber = Integer.parseInt(identityNumber.substring(14, 17)); // 3 位顺序码
+        int administrativeCode = IdentityCardUtils.parseInt(bytes, 0, 6); // 6 位地址码
+        int birthYear = IdentityCardUtils.parseInt(bytes, 6, 10); // 4 位年份
+        int birthMonth = IdentityCardUtils.parseInt(bytes, 10, 12); // 2 位月份
+        int birthDay = IdentityCardUtils.parseInt(bytes, 12, 14); // 2 位日期
+        int sequenceNumber = IdentityCardUtils.parseInt(bytes, 14, 17); // 3 位顺序码
 
         // 2. 计算出生日期距离基准日期 (0000-01-01) 的天数偏移
         LocalDate birthDate = LocalDate.of(birthYear, birthMonth, birthDay);
@@ -86,7 +88,7 @@ public class SimpleIdentityCodec implements IdentityCodec {
         // 1. 提取版本号 ([3-0] 位)
         int version = (int) (encoded & 0xFL);
 
-        // 2. Version routing check (currently only supports version 1)
+        // 2. 版本路由检查（当前仅支持版本1）
         if (version != 1) {
             throw new InvalidEncodingException(InvalidEncodingException.ErrorCode.UNSUPPORTED_VERSION, String.valueOf(version));
         }
@@ -111,15 +113,39 @@ public class SimpleIdentityCodec implements IdentityCodec {
             throw new InvalidEncodingException(InvalidEncodingException.ErrorCode.INVALID_BIT_FIELD, "Birth year out of range: " + birthYear);
         }
 
-        // 7. 组装前17位，然后计算校验码
-        String first17Chars = String.format("%06d%04d%02d%02d%03d",
-                administrativeCode, // 6位地址码
-                birthDate.getYear(), // 4位年份
-                birthDate.getMonthValue(), // 2位月份
-                birthDate.getDayOfMonth(), // 2位日期
-                sequenceNumber); // 3位顺序码
+        // 7. 使用优化的方法组装前17位，避免 String.format() 开销
+        char[] buffer = new char[18];
+        
+        // 直接填充字符数组，避免字符串格式化开销
+        appendNumber(buffer, 0, administrativeCode, 6);  // 6位地址码
+        appendNumber(buffer, 6, birthDate.getYear(), 4); // 4位年份
+        appendNumber(buffer, 10, birthDate.getMonthValue(), 2);  // 2位月份
+        appendNumber(buffer, 12, birthDate.getDayOfMonth(), 2);  // 2位日期
+        appendNumber(buffer, 14, sequenceNumber, 3);     // 3位顺序码
 
-        // 8. 返回完整的18位身份证号码
-        return IdentityCardUtils.appendCheckCode(first17Chars);
+        // 8. 转换为字节数组并计算校验码
+        byte[] bytes = new String(buffer).getBytes(StandardCharsets.ISO_8859_1);
+        char checkCode = IdentityCardUtils.calculateCheckCode(bytes);
+        bytes[17] = (byte) checkCode;
+        
+        // 9. 返回完整的18位身份证号码
+        return new String(bytes, StandardCharsets.ISO_8859_1);
+    }
+    
+    /**
+     * 将数字追加到字符数组指定位置
+     * 使用高效的数字转字符串算法
+     *
+     * @param buffer 字符数组缓冲区
+     * @param offset 起始位置
+     * @param number 要转换的数字
+     * @param width  固定宽度（不足补0）
+     */
+    private void appendNumber(char[] buffer, int offset, int number, int width) {
+        int pos = offset + width - 1;
+        while (pos >= offset) {
+            buffer[pos--] = (char) ('0' + (number % 10));
+            number /= 10;
+        }
     }
 }

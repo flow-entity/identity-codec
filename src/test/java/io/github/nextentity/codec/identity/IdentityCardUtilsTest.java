@@ -171,8 +171,8 @@ public class IdentityCardUtilsTest {
      */
     @Test
     void testNullInput() {
-        assertThrows(InvalidIdentityNumberException.class, () ->
-                IdentityCardUtils.calculateCheckCode(null));
+        assertThrows(NullPointerException.class, () ->
+                IdentityCardUtils.calculateCheckCode((String) null));
 
         assertThrows(IllegalArgumentException.class, () ->
                 IdentityCardUtils.appendCheckCode(null));
