@@ -22,10 +22,7 @@ public class InvalidIdentityNumberException extends IllegalArgumentException {
         INVALID_LENGTH("IIN-001", "Invalid ID number length"),
         INVALID_CHECK_CODE("IIN-002", "Invalid check code"),
         INVALID_CHARACTER("IIN-003", "Invalid character in ID number"),
-        INVALID_MONTH("IIN-004", "Invalid birth month"),
-        INVALID_DAY("IIN-005", "Invalid birth day"),
-        INVALID_DATE("IIN-006", "Invalid birth date"),
-        INVALID_SEQUENCE_CODE("IIN-007", "Invalid sequence code");
+        INVALID_DATE("IIN-004", "Invalid birth date");
 
         private final String code;
         private final String description;
