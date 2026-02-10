@@ -114,7 +114,7 @@ public class SimpleIdentityCodec implements IdentityCodec {
         }
 
         // 7. 使用优化的方法组装前17位，避免 String.format() 开销
-        char[] buffer = new char[18];
+        byte[] buffer = new byte[18];
         
         // 直接填充字符数组，避免字符串格式化开销
         appendNumber(buffer, administrativeCode, 0, 6);  // 6位地址码
@@ -124,12 +124,11 @@ public class SimpleIdentityCodec implements IdentityCodec {
         appendNumber(buffer, sequenceNumber, 14, 3);     // 3位顺序码
 
         // 8. 转换为字节数组并计算校验码
-        byte[] bytes = new String(buffer).getBytes(StandardCharsets.ISO_8859_1);
-        char checkCode = IdentityCardUtils.calculateCheckCode(bytes);
-        bytes[17] = (byte) checkCode;
+        char checkCode = IdentityCardUtils.calculateCheckCode(buffer);
+        buffer[17] = (byte) checkCode;
         
         // 9. 返回完整的18位身份证号码
-        return new String(bytes, StandardCharsets.ISO_8859_1);
+        return new String(buffer, StandardCharsets.ISO_8859_1);
     }
     
     /**
@@ -141,10 +140,10 @@ public class SimpleIdentityCodec implements IdentityCodec {
      * @param offset 起始位置
      * @param width  固定宽度（不足补0）
      */
-    private void appendNumber(char[] buffer, int number, int offset, int width) {
+    private void appendNumber(byte[] buffer, int number, int offset, int width) {
         int pos = offset + width - 1;
         while (pos >= offset) {
-            buffer[pos--] = (char) ('0' + (number % 10));
+            buffer[pos--] = (byte) ('0' + (number % 10));
             number /= 10;
         }
     }
