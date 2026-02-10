@@ -7,8 +7,8 @@ package io.github.nextentity.codec.identity;
  * 定义身份证号码编码和解码的标准接口
  * 实现类应提供将18位身份证号码与long类型之间相互转换的功能
  * </pre>
- *
- * <p><strong>获取实例的方式：</strong></p>
+ * <p>
+ * <strong>获取实例的方式：</strong>
  * 加密编码使用 IdentityCodecs 工厂类获取实例
  * <pre>{@code
  * IdentityCodec codec = IdentityCodecs.speck64Encrypt(new int[]{1, 2, 3, 4});}

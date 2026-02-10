@@ -6,7 +6,6 @@ import java.io.Serial;
  * 无效身份证号码异常
  * <p>
  * 当身份证号码格式不正确或校验码验证失败时抛出此异常。
- * </p>
  *
  * @version 1.0
  */
@@ -19,9 +18,21 @@ public class InvalidIdentityNumberException extends IllegalArgumentException {
      * 错误码枚举
      */
     public enum ErrorCode {
+        /**
+         * 无效的身份证号码长度
+         */
         INVALID_LENGTH("IIN-001", "Invalid ID number length"),
+        /**
+         * 无效的校验码
+         */
         INVALID_CHECK_CODE("IIN-002", "Invalid check code"),
+        /**
+         * 身份证号码中包含无效字符
+         */
         INVALID_CHARACTER("IIN-003", "Invalid character in ID number"),
+        /**
+         * 无效的出生日期
+         */
         INVALID_DATE("IIN-004", "Invalid birth date");
 
         private final String code;
@@ -32,15 +43,28 @@ public class InvalidIdentityNumberException extends IllegalArgumentException {
             this.description = description;
         }
 
+        /**
+         * 获取错误码
+         *
+         * @return 错误码
+         */
         public String getCode() {
             return code;
         }
 
+        /**
+         * 获取错误描述
+         *
+         * @return 错误描述
+         */
         public String getDescription() {
             return description;
         }
     }
 
+    /**
+     * 错误码
+     */
     private final ErrorCode errorCode;
 
     /**

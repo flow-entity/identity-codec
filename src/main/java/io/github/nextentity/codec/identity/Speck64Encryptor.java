@@ -4,11 +4,11 @@ import java.nio.ByteBuffer;
 
 /**
  * SPECK64分组密码加密器实现
- *
- * <p>SPECK是一种轻量级分组密码算法，专为受限环境设计。
- * SPECK64/128表示64位分组大小和128位密钥长度。</p>
- *
- * <p>算法特点：
+ * <p>
+ * SPECK是一种轻量级分组密码算法，专为受限环境设计。
+ * SPECK64/128表示64位分组大小和128位密钥长度。
+ * <p>
+ * 算法特点：
  * <pre>
  * - 分组大小：64位
  * - 密钥长度：128位（4个32位整数）
@@ -16,16 +16,14 @@ import java.nio.ByteBuffer;
  * - 旋转位数：右移8位，左移3位
  * - 结构：Feistel网络变体
  * </pre>
- * </p>
- *
- * <p>工作原理：
+ * <p>
+ * 工作原理：
  * <pre>
  * 1. 将64位明文分为两个32位部分
  * 2. 通过27轮Feistel变换进行加密
  * 3. 每轮使用不同的子密钥
  * 4. 子密钥通过密钥调度算法生成
  * </pre>
- * </p>
  *
  * @see <a href="https://en.wikipedia.org/wiki/Speck_(cipher)">SPECK Cipher Wikipedia</a>
  */
@@ -90,8 +88,8 @@ public class Speck64Encryptor implements Encryptor {
     /**
      * 自定义参数构造函数
      * 允许自定义SPECK算法的各种参数
-     *
-     * <p><strong>参数要求和影响：</strong>
+     * <p>
+     * <strong>参数要求和影响：</strong>
      * <pre>
      * rounds（轮数）：
      *   要求：建议≥16轮，标准为27轮
@@ -113,7 +111,6 @@ public class Speck64Encryptor implements Encryptor {
      *   高性能配置：rounds=16, alpha=4, beta=2
      *   高安全性配置：rounds=32, alpha=8, beta=3
      * </pre>
-     * </p>
      *
      * @param rounds 加密轮数，建议≥16轮，标准为27轮
      * @param alpha  右旋转位数，建议3-16位，标准为8位
@@ -157,18 +154,17 @@ public class Speck64Encryptor implements Encryptor {
 
     /**
      * 加密64位数据
-     *
-     * <p>使用SPECK64/128算法对64位长整型数据进行加密。
-     * 算法采用27轮Feistel网络结构，每轮使用不同的子密钥。</p>
-     *
-     * <p>加密流程：
+     * <p>
+     * 使用SPECK64/128算法对64位长整型数据进行加密。
+     * 算法采用27轮Feistel网络结构，每轮使用不同的子密钥。
+     * <p>
+     * 加密流程：
      * <pre>
      * 1. 将64位明文分为高位32位和低位32位
      * 2. 执行27轮Feistel变换
      * 3. 每轮应用轮函数和密钥异或
      * 4. 返回64位密文
      * </pre>
-     * </p>
      *
      * @param plaintext 64位明文数据
      * @return 64位加密后的数据
@@ -195,16 +191,15 @@ public class Speck64Encryptor implements Encryptor {
      * 解密64位数据
      * <p>
      * 使用SPECK64/128算法对64位密文数据进行解密。
-     * 解密过程是加密过程的逆向操作，按照相反顺序应用轮函数。</p>
-     *
-     * <p>解密流程：
+     * 解密过程是加密过程的逆向操作，按照相反顺序应用轮函数。
+     * <p>
+     * 解密流程：
      * <pre>
      * 1. 使用预计算的轮密钥（构造函数中生成）
      * 2. 按照相反顺序执行轮逆向变换
      * 3. 每轮应用逆向轮函数
      * 4. 返回64位明文
      * </pre>
-     * </p>
      *
      * @param ciphertext 64位密文数据
      * @return 64位解密后的明文数据
@@ -246,6 +241,13 @@ public class Speck64Encryptor implements Encryptor {
         return (value >>> bits) | (value << (32 - bits));
     }
 
+    /**
+     * 将字节数组转换为整数数组
+     *
+     * @param key 16字节密钥字节数组
+     * @return 包含4个32位整数的数组
+     * @throws IllegalArgumentException 当密钥长度不为16字节时抛出
+     */
     public static int[] bytesToInts(byte[] key) {
         if (key.length != 16) {
             throw new IllegalArgumentException("SPECK64/128 requires exactly 16 bytes (128 bits) as key");

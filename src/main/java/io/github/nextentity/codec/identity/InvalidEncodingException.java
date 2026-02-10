@@ -7,7 +7,6 @@ import java.io.Serial;
  * <p>
  * 当身份证解码过程中出现错误时抛出此异常。
  * 包括版本不支持、数据格式错误等情况。
- * </p>
  *
  * @version 1.0
  */
@@ -20,9 +19,21 @@ public class InvalidEncodingException extends IllegalArgumentException {
      * 错误码枚举
      */
     public enum ErrorCode {
+        /**
+         * 不支持的压缩版本
+         */
         UNSUPPORTED_VERSION("IEC-001", "Unsupported compression version"),
+        /**
+         * 预留位必须为零
+         */
         RESERVED_BITS_NOT_ZERO("IEC-002", "Reserved bits must be zero"),
+        /**
+         * 无效的位域提取
+         */
         INVALID_BIT_FIELD("IEC-003", "Invalid bit field extraction"),
+        /**
+         * 解密操作失败
+         */
         DECRYPTION_FAILED("IEC-004", "Decryption operation failed");
 
         private final String code;
@@ -33,15 +44,28 @@ public class InvalidEncodingException extends IllegalArgumentException {
             this.description = description;
         }
 
+        /**
+         * 获取错误码
+         *
+         * @return 错误码
+         */
         public String getCode() {
             return code;
         }
 
+        /**
+         * 获取错误描述
+         *
+         * @return 错误描述
+         */
         public String getDescription() {
             return description;
         }
     }
 
+    /**
+     * 错误码
+     */
     private final ErrorCode errorCode;
 
     /**
