@@ -46,6 +46,13 @@ public class IdentityCardUtils {
         return calculateCheckCode(chars);
     }
 
+    /**
+     * 计算18位身份证号码的校验码（字节数组版本）
+     *
+     * @param chars 身份证号码字节数组，长度必须为17或18字节
+     * @return 计算得到的校验码字符（'0'-'9' 或 'X'）
+     * @throws InvalidIdentityNumberException 当身份证号码格式不正确时抛出
+     */
     public static char calculateCheckCode(byte[] chars) {
         if (chars.length < 17 || chars.length > 18) {
             throw new InvalidIdentityNumberException(InvalidIdentityNumberException.ErrorCode.INVALID_LENGTH, "Input length must be 17 or 18");
@@ -91,6 +98,12 @@ public class IdentityCardUtils {
         validate(bytes);
     }
 
+    /**
+     * 验证身份证号码的校验码，如果不正确则抛出异常（字节数组版本）
+     *
+     * @param bytes 身份证号码字节数组，长度必须为18字节
+     * @throws InvalidIdentityNumberException 当身份证号码格式不正确或校验码不正确时抛出
+     */
     public static void validate(byte[] bytes) {
         if (bytes.length != 18) {
             throw new InvalidIdentityNumberException(InvalidIdentityNumberException.ErrorCode.INVALID_LENGTH, "ID number must be exactly 18 digits");
@@ -117,6 +130,14 @@ public class IdentityCardUtils {
         }
     }
 
+    /**
+     * 将字节数组中指定范围的数字字符解析为整数
+     *
+     * @param str   包含数字字符的字节数组
+     * @param start 起始位置（包含）
+     * @param end   结束位置（不包含）
+     * @return 解析得到的整数值
+     */
     public static int parseInt(byte[] str, int start, int end) {
         int result = 0;
         for (int i = start; i < end; i++) {

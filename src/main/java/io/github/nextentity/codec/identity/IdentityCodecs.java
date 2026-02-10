@@ -81,6 +81,9 @@ public class IdentityCodecs {
         return new EncryptedIdentityCodec(codec, encryptor);
     }
 
+    /**
+     * 私有构造方法，防止实例化
+     */
     private IdentityCodecs() {
     }
 

@@ -127,6 +127,12 @@ public class Speck64Encryptor implements Encryptor {
         this.roundKeys = generateRoundKeys();
     }
 
+    /**
+     * 检查密钥长度是否为4个32位整数
+     *
+     * @param key 密钥数组
+     * @throws IllegalArgumentException 当密钥长度不为4时抛出
+     */
     private static void checkKeyLength(int[] key) {
         if (key.length != 4) {
             throw new IllegalArgumentException("SPECK64/128 requires exactly 4 integers (128 bits) as key");
