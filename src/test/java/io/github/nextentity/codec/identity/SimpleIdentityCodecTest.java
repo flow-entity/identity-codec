@@ -405,4 +405,61 @@ public class SimpleIdentityCodecTest {
 
         logger.info("不支持版本号异常处理测试完成");
     }
+
+    /**
+     * 固定值测试 - 验证特定输入输出的编码解码正确性
+     * 测试版本1算法的固定输入输出对
+     */
+    @Test
+    void testFixedValues() {
+        logger.info("=== 固定值测试 ===");
+
+        // 测试用例数组：[身份证号码, 期望的long编码值]
+        Object[][] testCases = {
+                {"11010519491231002X", 7566369655062561L},
+                {"110101199001011237", 7566095016544177L},
+                {"310101198506152345", 21309990336532129L},
+                {"440101198012123455", 30243522285245841L},
+                {"510101197503214566", 35053885622475905L},
+                {"110101190001011236", 7566094477969329L},
+                {"110101195006152348", 7566094779879073L},
+                {"110101200012123459", 7566095082050961L},
+                {"110101202303214560", 7566095215320193L},
+                {"110101000001011236", 7566083108112305L},
+                {"110101999912311236", 7566142949427121L},
+                {"11010119900307109X", 7566095017608913L},
+                {"110101199001010015", 7566095016542225L},
+                {"110101199001019992", 7566095016558193L}
+        };
+
+        for (int i = 0; i < testCases.length; i++) {
+            String idCard = (String) testCases[i][0];
+            long expectedEncoded = (long) testCases[i][1];
+
+            logger.info("测试用例 {}: {}", (i + 1), idCard);
+
+            try {
+                long actualEncoded = codec.encode(idCard);
+                logger.info("  期望编码: {}", expectedEncoded);
+                logger.info("  实际编码: {}", actualEncoded);
+
+                assertEquals(expectedEncoded, actualEncoded,
+                        "编码结果不匹配 - 测试用例 " + (i + 1) + ": " + idCard);
+
+                String decoded = codec.decode(actualEncoded);
+                logger.info("  解码结果: {}", decoded);
+
+                assertEquals(idCard, decoded,
+                        "解码结果不匹配 - 测试用例 " + (i + 1) + ": " + idCard);
+
+                logger.info("  ✓ 测试通过");
+
+            } catch (Exception e) {
+                logger.error("  ✗ 测试失败: {}", e.getMessage());
+                fail("固定值测试失败 - 测试用例 " + (i + 1) + ": " + e.getMessage());
+            }
+        }
+
+        logger.info("固定值测试完成");
+    }
 }
