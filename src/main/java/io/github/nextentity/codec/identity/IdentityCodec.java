@@ -8,7 +8,21 @@ package io.github.nextentity.codec.identity;
  * 实现类应提供将18位身份证号码与long类型之间相互转换的功能
  * </pre>
  *
+ * <p><strong>获取实例的方式：</strong></p>
+ * 加密编码使用 IdentityCodecs 工厂类获取实例
+ * <pre>{@code
+ * IdentityCodec codec = IdentityCodecs.speck64Encrypt(new int[]{1, 2, 3, 4});}
+ * </pre>
+ * <p>
+ * 不加密编码直接实例化 SimpleIdentityCodec
+ * <pre>{@code
+ * IdentityCodec simpleCodec = new SimpleIdentityCodec();}
+ * </pre>
+ *
  * @version 1.0
+ * @see IdentityCodecs
+ * @see SimpleIdentityCodec
+ * @see EncryptedIdentityCodec
  */
 public interface IdentityCodec {
 

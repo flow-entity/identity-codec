@@ -13,7 +13,7 @@ Identity Codec 是一个高效的身份证明编码库，专门用于将18位中
 - 🔐 **双重编码模式**：支持普通编码和加密编码
 - 🚀 **高性能**：基于位运算的快速编码解码
 - 💾 **高压缩率**：18位身份证压缩至56位有效数据
-- 🛡️ **安全加密**：集成XOR加密算法保护敏感数据
+- 🛡️ **安全加密**：集成SPECK64轻量级分组密码算法
 - 📊 **零依赖**：纯Java实现，无需外部依赖
 - ✅ **完整测试**：包含全面的单元测试覆盖
 
@@ -26,9 +26,10 @@ Identity Codec 是一个高效的身份证明编码库，专门用于将18位中
 IdentityCodec - 统一编码接口
 
 // 实现类
-SimpleIdentityCodec  - 基础身份编码器
-EncryptedIdentityCodec - 加密身份编码器
-XorEncryptor         - XOR加密器
+SimpleIdentityCodec     - 基础身份编码器
+EncryptedIdentityCodec  - 加密身份编码器
+Speck64Encryptor        - SPECK64加密器
+IdentityCodecs          - 工厂类
 ```
 
 ### 位域分配结构
@@ -75,9 +76,8 @@ System.out.println("解码结果: " + decoded);
 ### 3. 加密编码
 
 ```java
-// 创建加密编码器
-long encryptionKey = 0x123456789ABCDEF0L;
-IdentityCodec encryptedCodec = new EncryptedIdentityCodec(encryptionKey);
+// 推荐使用工厂类创建加密编码器
+IdentityCodec encryptedCodec = IdentityCodecs.speck64Encrypt(new int[]{1, 2, 3, 4});
 
 // 加密编码
 long encrypted = encryptedCodec.encode(idCard);
@@ -112,47 +112,60 @@ System.out.println("解密结果: " + decrypted);
 
 ## 安全特性
 
-### XOR加密机制
+### SPECK64加密机制
 
-```java
-// 加密过程
-encrypted = plaintext ^ encryptionKey
+SPECK是一族轻量级分组密码算法。
 
-// 解密过程  
-plaintext = encrypted ^ encryptionKey
-```
+**算法特点**：
+- 分组大小：64位
+- 密钥长度：128位（支持多种密钥长度）
+- 标准轮数：27轮
+- 轻量级设计，适合移动设备和嵌入式系统
+- 经过充分的安全性分析
 
 **安全注意事项**：
 - 加密强度依赖于密钥的随机性和保密性
-- 建议使用高熵值作为加密密钥
-- 适用于中等安全级别的应用场景
+- 建议使用安全的随机数生成器产生密钥
+- 适用于中高等安全级别的应用场景
 
 ## API参考
 
-### IdentityCodec 接口
+### 主要类和接口
+
+#### IdentityCodec (接口)
+统一的身份编码接口，定义编码和解码标准方法。
+
+#### IdentityCodecs (工厂类)
+提供创建各种编码器实例的静态工厂方法。
 
 ```java
-public interface IdentityCodec {
-    /**
-     * 将18位身份证号码编码为long类型
-     */
-    long encode(String identityNumber);
-    
-    /**
-     * 将编码后的long值解码为18位身份证号码
-     */
-    String decode(long encoded);
-}
+// 创建SPECK64加密编码器
+IdentityCodec encryptedCodec = IdentityCodecs.speck64Encrypt(new int[]{1, 2, 3, 4});
+
+// 创建基础编码器
+IdentityCodec simpleCodec = new SimpleIdentityCodec();
 ```
+
+#### SimpleIdentityCodec
+基础身份编码器实现，提供无加密的身份证编码功能。
+
+#### EncryptedIdentityCodec
+加密身份编码器，包装基础编码器并添加加密层。
+
+#### Speck64Encryptor
+SPECK64加密算法的具体实现，提供64位数据的加密解密功能。
 
 ### 异常处理
 
 ```java
 try {
     long encoded = codec.encode(invalidIdCard);
-} catch (IllegalArgumentException e) {
+} catch (InvalidIdentityNumberException e) {
     // 处理无效身份证格式
     System.err.println("身份证格式错误: " + e.getMessage());
+} catch (InvalidEncodingException e) {
+    // 处理编码错误
+    System.err.println("编码错误: " + e.getMessage());
 }
 ```
 
