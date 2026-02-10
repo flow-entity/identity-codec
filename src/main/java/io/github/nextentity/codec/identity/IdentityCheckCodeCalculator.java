@@ -89,31 +89,35 @@ public class IdentityCheckCodeCalculator {
         }
 
         // 1. 校验码验证
-        char expectedCheckCode = calculate(identityNumber);
-        char actualCheckCode = Character.toUpperCase(identityNumber.charAt(17));
+        char expected = calculate(identityNumber);
+        char actual = Character.toUpperCase(identityNumber.charAt(17));
 
-        if (expectedCheckCode != actualCheckCode) {
-            throw new InvalidIdentityNumberException("ID number check code is invalid");
+        if (expected != actual) {
+            throw new InvalidIdentityNumberException(String.format(
+                    "ID number check code is invalid: expected '%c', actual '%c'",
+                    expected,
+                    actual
+            ));
         }
 
         // 2. 日期格式和有效性验证
         try {
-            int birthYear = Integer.parseInt(identityNumber.substring(6, 10));
-            int birthMonth = Integer.parseInt(identityNumber.substring(10, 12));
-            int birthDay = Integer.parseInt(identityNumber.substring(12, 14));
+            int year = Integer.parseInt(identityNumber.substring(6, 10));
+            int month = Integer.parseInt(identityNumber.substring(10, 12));
+            int day = Integer.parseInt(identityNumber.substring(12, 14));
 
-            if (birthMonth < 1 || birthMonth > 12) {
+            if (month < 1 || month > 12) {
                 throw new InvalidIdentityNumberException("ID number birth month is invalid");
             }
-            if (birthDay < 1 || birthDay > 31) {
+            if (day < 1 || day > 31) {
                 throw new InvalidIdentityNumberException("ID number birth day is invalid");
             }
 
             // 详细日期验证（包括闰年、每月天数等）
-            var _ = LocalDate.of(birthYear, birthMonth, birthDay);
+            var _ = LocalDate.of(year, month, day);
 
         } catch (NumberFormatException | DateTimeException e) {
-            throw new InvalidIdentityNumberException("ID number birth date is invalid");
+            throw new InvalidIdentityNumberException("ID number birth date is invalid", e);
         }
     }
 

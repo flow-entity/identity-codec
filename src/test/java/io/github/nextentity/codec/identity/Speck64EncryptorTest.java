@@ -3,25 +3,79 @@ package io.github.nextentity.codec.identity;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.Arrays;
-
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * AesCtrEncryptor 测试类
- * 测试 AES/CTR 模式加密器的加密和解密功能
+ * Speck64Encryptor 测试类
+ * 测试 SPECK64/128 分组密码加密器的功能
  */
-public class AesCtrEncryptorTest {
+public class Speck64EncryptorTest {
 
-    private AesCtrEncryptor encryptor;
-    private static final byte[] TEST_KEY = new byte[]{
-            0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
-            0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F
-    };
+    private Speck64Encryptor encryptor;
+    private static final int[] TEST_KEY = {0x01234567, 0x89ABCDEF, 0xFEDCBA98, 0x76543210};
 
     @BeforeEach
     void setUp() {
-        encryptor = new AesCtrEncryptor(TEST_KEY);
+        encryptor = new Speck64Encryptor(TEST_KEY);
+    }
+
+    /**
+     * 测试字节数组构造函数
+     */
+    @Test
+    void testByteArrayConstructor() {
+        // 测试正确的16字节密钥
+        byte[] keyBytes = {
+            0x01, 0x23, 0x45, 0x67,  // 第一个32位整数
+            (byte) 0x89, (byte) 0xAB, (byte) 0xCD, (byte) 0xEF,  // 第二个32位整数
+            (byte) 0xFE, (byte) 0xDC, (byte) 0xBA, (byte) 0x98,  // 第三个32位整数
+            0x76, 0x54, 0x32, 0x10   // 第四个32位整数
+        };
+        
+        assertDoesNotThrow(() -> new Speck64Encryptor(keyBytes));
+        
+        // 验证转换后的整数数组是否正确
+        Speck64Encryptor byteEncryptor = new Speck64Encryptor(keyBytes);
+        Speck64Encryptor intEncryptor = new Speck64Encryptor(TEST_KEY);
+        
+        long testData = 0x123456789ABCDEF0L;
+        long result1 = byteEncryptor.encrypt(testData);
+        long result2 = intEncryptor.encrypt(testData);
+        
+        assertEquals(result1, result2, "字节数组和整数数组构造的加密器应该产生相同结果");
+    }
+    
+    /**
+     * 测试字节数组构造函数的参数验证
+     */
+    @Test
+    void testByteArrayConstructorValidation() {
+        // 测试长度不足的字节数组
+        byte[] shortKey = {0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08};
+        assertThrows(IllegalArgumentException.class, () -> new Speck64Encryptor(shortKey));
+        
+        // 测试长度过长的字节数组
+        byte[] longKey = new byte[20];
+        assertThrows(IllegalArgumentException.class, () -> new Speck64Encryptor(longKey));
+        
+        // 测试null字节数组
+        assertThrows(NullPointerException.class, () -> new Speck64Encryptor((byte[]) null));
+    }
+
+    /**
+     * 测试构造函数参数验证
+     */
+    @Test
+    void testConstructorValidation() {
+        // 测试正确长度的密钥
+        assertDoesNotThrow(() -> new Speck64Encryptor(TEST_KEY));
+        
+        // 测试错误长度的密钥
+        int[] shortKey = {0x01234567, 0x89ABCDEF};
+        assertThrows(IllegalArgumentException.class, () -> new Speck64Encryptor(shortKey));
+        
+        int[] longKey = {0x01234567, 0x89ABCDEF, 0xFEDCBA98, 0x76543210, 0x11111111};
+        assertThrows(IllegalArgumentException.class, () -> new Speck64Encryptor(longKey));
     }
 
     /**
@@ -29,7 +83,7 @@ public class AesCtrEncryptorTest {
      */
     @Test
     void testEncryptDecryptBasic() {
-        long plaintext = 0x0F0F0F0F0F0F0F0FL;
+        long plaintext = 0x0123456789ABCDEFL;
 
         // 加密
         long encrypted = encryptor.encrypt(plaintext);
@@ -78,13 +132,11 @@ public class AesCtrEncryptorTest {
     void testDifferentKeys() {
         long data = 0x123456789ABCDEF0L;
 
-        byte[] key1 = new byte[16];
-        Arrays.fill(key1, (byte) 0x11);
-        AesCtrEncryptor encryptor1 = new AesCtrEncryptor(key1);
+        int[] key1 = {0x11111111, 0x22222222, 0x33333333, 0x44444444};
+        int[] key2 = {0xFFFFFFFF, 0xEEEEEEEE, 0xDDDDDDDD, 0xCCCCCCCC};
 
-        byte[] key2 = new byte[16];
-        Arrays.fill(key2, (byte) 0xFF);
-        AesCtrEncryptor encryptor2 = new AesCtrEncryptor(key2);
+        Speck64Encryptor encryptor1 = new Speck64Encryptor(key1);
+        Speck64Encryptor encryptor2 = new Speck64Encryptor(key2);
 
         long result1 = encryptor1.encrypt(data);
         long result2 = encryptor2.encrypt(data);
@@ -99,8 +151,8 @@ public class AesCtrEncryptorTest {
     void testSameKeyConsistency() {
         long data = 0x123456789ABCDEF0L;
 
-        AesCtrEncryptor encryptor1 = new AesCtrEncryptor(TEST_KEY);
-        AesCtrEncryptor encryptor2 = new AesCtrEncryptor(TEST_KEY);
+        Speck64Encryptor encryptor1 = new Speck64Encryptor(TEST_KEY);
+        Speck64Encryptor encryptor2 = new Speck64Encryptor(TEST_KEY);
 
         long result1 = encryptor1.encrypt(data);
         long result2 = encryptor2.encrypt(data);
@@ -133,66 +185,6 @@ public class AesCtrEncryptorTest {
     }
 
     /**
-     * 测试字节数组加密解密功能
-     */
-    @Test
-    void testByteArrayEncryptDecrypt() throws Exception {
-        byte[] originalData = {0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08};
-
-        // 加密
-        byte[] encrypted = encryptor.encrypt(originalData);
-        assertNotNull(encrypted, "加密结果不应为null");
-        assertNotEquals(Arrays.toString(originalData), Arrays.toString(encrypted),
-                "加密结果应该与原始数据不同");
-
-        // 解密
-        byte[] decrypted = encryptor.decrypt(encrypted);
-        assertArrayEquals(originalData, decrypted, "解密后应该与原始数据一致");
-    }
-
-    /**
-     * 测试不同长度的字节数组
-     */
-    @Test
-    void testDifferentLengthByteArrays() throws Exception {
-        byte[][] testData = {
-                {},  // 空数组
-                {0x01},
-                {0x01, 0x02},
-                {0x01, 0x02, 0x03, 0x04},
-                {0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08},
-                {0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A}
-        };
-
-        for (byte[] data : testData) {
-            byte[] encrypted = encryptor.encrypt(data);
-            byte[] decrypted = encryptor.decrypt(encrypted);
-            assertArrayEquals(data, decrypted,
-                    "长度为 " + data.length + " 的字节数组加密解密失败");
-        }
-    }
-
-    /**
-     * 测试异常情况 - 无效密钥长度
-     */
-    @Test
-    void testInvalidKeyLength() {
-        // 测试密钥长度不足16字节
-        byte[] shortKey = new byte[8];
-        assertThrows(IllegalArgumentException.class, () -> new AesCtrEncryptor(shortKey),
-                "应该抛出异常当密钥长度不正确时");
-
-        // 测试密钥长度超过16字节
-        byte[] longKey = new byte[32];
-        assertThrows(IllegalArgumentException.class, () -> new AesCtrEncryptor(longKey),
-                "应该抛出异常当密钥长度超过16字节时");
-
-        // 测试null密钥
-        assertThrows(IllegalArgumentException.class, () -> new AesCtrEncryptor(null),
-                "应该抛出异常当密钥为null时");
-    }
-
-    /**
      * 测试加密结果的唯一性
      */
     @Test
@@ -201,7 +193,7 @@ public class AesCtrEncryptorTest {
         long data2 = 0x1101011990010113L; // 只差一位
 
         long encrypted1 = encryptor.encrypt(data1);
-        long encrypted2 = encryptor.decrypt(data2);
+        long encrypted2 = encryptor.encrypt(data2);
 
         assertNotEquals(encrypted1, encrypted2, "不同数据应该产生不同的加密结果");
 
@@ -258,23 +250,8 @@ public class AesCtrEncryptorTest {
         long endTime = System.nanoTime();
         long duration = (endTime - startTime) / 1_000_000; // 转换为毫秒
 
-        System.out.println("AES/CTR加密性能测试完成，耗时: " + duration + " ms");
+        System.out.println("SPECK64加密性能测试完成，耗时: " + duration + " ms");
         assertTrue(duration < 5000, "性能测试应该在5秒内完成");
-    }
-
-    /**
-     * 测试CTR模式的特性 - 相同明文产生不同密文（由于计数器递增）
-     * 注意：由于使用固定IV，实际测试中会得到相同结果
-     */
-    @Test
-    void testCtrModeCharacteristics() {
-        long data = 0x123456789ABCDEF0L;
-
-        // 在CTR模式下，使用相同密钥和IV，相同明文会产生相同密文
-        long encrypted1 = encryptor.encrypt(data);
-        long encrypted2 = encryptor.encrypt(data);
-
-        assertEquals(encrypted1, encrypted2, "CTR模式下相同明文应该产生相同密文");
     }
 
     /**
@@ -287,7 +264,7 @@ public class AesCtrEncryptorTest {
 
         // 加密结果不应该显示出明显的模式
         assertNotEquals(data, encrypted, "加密结果不应该等于原始数据");
-
+        
         // 检查加密结果是否包含各种bit模式
         assertTrue(encrypted != 0, "加密结果不应该全为0");
         assertTrue(encrypted != -1, "加密结果不应该全为1");

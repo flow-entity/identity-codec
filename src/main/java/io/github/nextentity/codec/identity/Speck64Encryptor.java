@@ -1,0 +1,265 @@
+package io.github.nextentity.codec.identity;
+
+import java.nio.ByteBuffer;
+
+/**
+ * SPECK64分组密码加密器实现
+ *
+ * <p>SPECK是一种轻量级分组密码算法，专为受限环境设计。
+ * SPECK64/128表示64位分组大小和128位密钥长度。</p>
+ *
+ * <p>算法特点：
+ * <pre>
+ * - 分组大小：64位
+ * - 密钥长度：128位（4个32位整数）
+ * - 轮数：27轮
+ * - 旋转位数：右移8位，左移3位
+ * - 结构：Feistel网络变体
+ * </pre>
+ * </p>
+ *
+ * <p>工作原理：
+ * <pre>
+ * 1. 将64位明文分为两个32位部分
+ * 2. 通过27轮Feistel变换进行加密
+ * 3. 每轮使用不同的子密钥
+ * 4. 子密钥通过密钥调度算法生成
+ * </pre>
+ * </p>
+ *
+ * @see <a href="https://en.wikipedia.org/wiki/Speck_(cipher)">SPECK Cipher Wikipedia</a>
+ */
+public class Speck64Encryptor implements Encryptor {
+
+    /**
+     * 加密轮数
+     * SPECK64/128标准使用27轮，但可以通过构造函数自定义
+     */
+    private final int rounds;
+
+    /**
+     * 右旋转位数
+     * 标准SPECK64使用8位右旋转
+     */
+    private final int alpha;
+
+    /**
+     * 左旋转位数
+     * 标准SPECK64使用3位左旋转
+     */
+    private final int beta;
+
+    /**
+     * 128位加密密钥
+     * 拆分为4个32位整数数组，用于密钥调度算法
+     */
+    private final int[] key;
+
+
+    /**
+     * 字节数组构造函数
+     * 将128位字节数组密钥转换为4个32位整数数组
+     *
+     * @param key 128位加密密钥字节数组，长度必须为16字节
+     * @throws IllegalArgumentException 当字节数组长度不为16时抛出
+     */
+    public Speck64Encryptor(byte[] key) {
+        int[] intKey = bytes2Ints(key);
+        this(27, 8, 3, intKey);
+    }
+
+    /**
+     * 默认构造函数
+     * 使用SPECK64/128标准参数：27轮，右旋8位，左旋3位
+     *
+     * @param key 128位加密密钥，必须包含4个32位整数
+     * @throws IllegalArgumentException 当密钥数组长度不为4时抛出
+     */
+    public Speck64Encryptor(int[] key) {
+        if (key.length != 4) {
+            throw new IllegalArgumentException("SPECK64/128 requires exactly 4 integers (128 bits) as key");
+        }
+        this(27, 8, 3, key);
+    }
+
+    /**
+     * 自定义参数构造函数
+     * 允许自定义SPECK算法的各种参数
+     *
+     * <p><strong>参数要求和影响：</strong>
+     * <pre>
+     * rounds（轮数）：
+     *   要求：建议≥16轮，标准为27轮
+     *   影响：轮数越多安全性越高，但性能越低
+     *   权衡：轮数过少可能导致安全性不足，过多影响性能
+     *
+     * alpha（右旋转位数）：
+     *   要求：建议3-16位，标准为8位
+     *   影响：控制Feistel网络的扩散速度
+     *   权衡：位数过大可能降低扩散效果
+     *
+     * beta（左旋转位数）：
+     *   要求：建议1-8位，标准为3位
+     *   影响：与alpha配合控制算法的混淆特性
+     *   权衡：通常比alpha小，避免过度旋转
+     *
+     * 参数组合建议：
+     *   标准配置：rounds=27, alpha=8, beta=3
+     *   高性能配置：rounds=16, alpha=4, beta=2
+     *   高安全性配置：rounds=32, alpha=8, beta=3
+     * </pre>
+     * </p>
+     *
+     * @param rounds 加密轮数，建议≥16轮，标准为27轮
+     * @param alpha  右旋转位数，建议3-16位，标准为8位
+     * @param beta   左旋转位数，建议1-8位，标准为3位
+     * @param key    128位加密密钥，必须包含4个32位整数
+     * @throws IllegalArgumentException 当密钥数组长度不为4时抛出
+     */
+    public Speck64Encryptor(int rounds, int alpha, int beta, int[] key) {
+        checkKeyLength(key);
+        this.rounds = rounds;
+        this.alpha = alpha;
+        this.beta = beta;
+        this.key = key;
+    }
+
+    private static void checkKeyLength(int[] key) {
+        if (key.length != 4) {
+            throw new IllegalArgumentException("SPECK64/128 requires exactly 4 integers (128 bits) as key");
+        }
+    }
+
+    /**
+     * 加密64位数据
+     *
+     * <p>使用SPECK64/128算法对64位长整型数据进行加密。
+     * 算法采用27轮Feistel网络结构，每轮使用不同的子密钥。</p>
+     *
+     * <p>加密流程：
+     * <pre>
+     * 1. 将64位明文分为高位32位和低位32位
+     * 2. 执行27轮Feistel变换
+     * 3. 每轮应用轮函数和密钥异或
+     * 4. 返回64位密文
+     * </pre>
+     * </p>
+     *
+     * @param plaintext 64位明文数据
+     * @return 64位加密后的数据
+     */
+    @Override
+    public long encrypt(long plaintext) {
+        // 将 64 位 long 拆分为两个 32 位 int (high, low)
+        int high = (int) (plaintext >> 32);
+        int low = (int) (plaintext & 0xFFFFFFFFL);
+
+        // 密钥扩展 (Key Schedule)
+        // schedule存储密钥调度过程中的中间值
+        int[] schedule = new int[key.length - 1];
+        // round 存储每轮使用的子密钥
+        int[] round = new int[rounds];
+        System.arraycopy(key, 0, schedule, 0, key.length - 1);
+        round[0] = key[key.length - 1];
+
+        // 加密循环 - 执行指定轮数的Feistel变换
+        for (int i = 0; i < rounds; i++) {
+            // 轮函数 - SPECK的核心变换
+            // 1. 高位右旋转并与低位相加，再与子密钥异或
+            high = (ror(high, alpha) + low) ^ round[i];
+            // 2. 低位左旋转并与新的高位异或
+            low = rol(low, beta) ^ high;
+
+            // 生成下一轮子密钥 - 密钥调度算法
+            if (i < rounds - 1) {
+                // 更新调度中间值：右旋转 + 异或轮索引
+                schedule[i % schedule.length] = (ror(schedule[i % schedule.length], alpha) + round[i]) ^ i;
+                // 生成下一轮子密钥：左旋转 + 异或调度值
+                round[i + 1] = rol(round[i], beta) ^ schedule[i % schedule.length];
+            }
+        }
+
+        return ((long) high << 32) | (low & 0xFFFFFFFFL);
+    }
+
+    /**
+     * 解密64位数据
+     * <p>
+     * 使用SPECK64/128算法对64位密文数据进行解密。
+     * 解密过程是加密过程的逆向操作，按照相反顺序应用轮函数。</p>
+     *
+     * <p>解密流程：
+     * <pre>
+     * 1. 重新生成所有轮密钥
+     * 2. 按照相反顺序执行27轮逆向变换
+     * 3. 每轮应用逆向轮函数
+     * 4. 返回64位明文
+     * </pre>
+     * </p>
+     *
+     * @param ciphertext 64位密文数据
+     * @return 64位解密后的明文数据
+     */
+    @Override
+    public long decrypt(long ciphertext) {
+        int high = (int) (ciphertext >> 32);
+        int low = (int) (ciphertext & 0xFFFFFFFFL);
+
+        // 重新生成子密钥 (解密需要反向使用)
+        // 解密时需要按相反顺序使用相同的子密钥序列
+        int[] schedule = new int[key.length - 1];
+        int[] round = new int[rounds];
+        System.arraycopy(key, 0, schedule, 0, key.length - 1);
+        round[0] = key[key.length - 1];
+
+        for (int i = 0; i < rounds - 1; i++) {
+            schedule[i % schedule.length] = (ror(schedule[i % schedule.length], alpha) + round[i]) ^ i;
+            round[i + 1] = rol(round[i], beta) ^ schedule[i % schedule.length];
+        }
+
+        // 反向加密循环 - 按相反顺序执行轮函数
+        for (int i = rounds - 1; i >= 0; i--) {
+            low = ror(low ^ high, beta);
+            high = rol((high ^ round[i]) - low, alpha);
+        }
+
+        return ((long) high << 32) | (low & 0xFFFFFFFFL);
+    }
+
+
+    /**
+     * 循环左移操作
+     *
+     * @param value 待移位的32位整数值
+     * @param bits  左移位数
+     * @return 循环左移后的结果
+     */
+    private static int rol(int value, int bits) {
+        return (value << bits) | (value >>> (32 - bits));
+    }
+
+    /**
+     * 循环右移操作
+     *
+     * @param value 待移位的32位整数值
+     * @param bits  右移位数
+     * @return 循环右移后的结果
+     */
+    private static int ror(int value, int bits) {
+        return (value >>> bits) | (value << (32 - bits));
+    }
+
+    public static int[] bytes2Ints(byte[] key) {
+        if (key.length != 16) {
+            throw new IllegalArgumentException("SPECK64/128 requires exactly 16 bytes (128 bits) as key");
+        }
+
+        int[] intKey = new int[4];
+        var buffer = ByteBuffer.wrap(key);
+        for (int i = 0; i < 4; i++) {
+            intKey[i] = buffer.getInt();
+        }
+        return intKey;
+    }
+
+}

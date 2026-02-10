@@ -24,4 +24,8 @@ public class InvalidIdentityNumberException extends IllegalArgumentException {
         super(message);
     }
 
+    public InvalidIdentityNumberException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
 }
