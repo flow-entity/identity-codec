@@ -44,27 +44,27 @@ public class SimpleIdentityCodec implements IdentityCodec {
      */
     @Override
     public long encode(String identityNumber) {
-        byte[] bytes = identityNumber.getBytes(StandardCharsets.ISO_8859_1);
-        IdentityCardUtils.validate(bytes);
+        byte[] buffer = identityNumber.getBytes(StandardCharsets.ISO_8859_1);
+        IdentityCardUtils.validate(buffer);
         // 1. 解析 18 位身份证号码各组成部分（不存储校验码）
-        int administrativeCode = IdentityCardUtils.parseInt(bytes, 0, 6); // 6 位地址码
-        int birthYear = IdentityCardUtils.parseInt(bytes, 6, 10); // 4 位年份
-        int birthMonth = IdentityCardUtils.parseInt(bytes, 10, 12); // 2 位月份
-        int birthDay = IdentityCardUtils.parseInt(bytes, 12, 14); // 2 位日期
-        int sequenceNumber = IdentityCardUtils.parseInt(bytes, 14, 17); // 3 位顺序码
+        int administrativeCode = IdentityCardUtils.parseInt(buffer, 0, 6); // 6 位地址码
+        int year = IdentityCardUtils.parseInt(buffer, 6, 10); // 4 位年份
+        int month = IdentityCardUtils.parseInt(buffer, 10, 12); // 2 位月份
+        int day = IdentityCardUtils.parseInt(buffer, 12, 14); // 2 位日期
+        int sequenceNumber = IdentityCardUtils.parseInt(buffer, 14, 17); // 3 位顺序码
 
         // 2. 计算出生日期距离基准日期 (0000-01-01) 的天数偏移
-        LocalDate birthDate = LocalDate.of(birthYear, birthMonth, birthDay);
-        long daysOffset = ChronoUnit.DAYS.between(BASE_DATE, birthDate);
+        LocalDate birth = LocalDate.of(year, month, day);
+        long daysOffset = ChronoUnit.DAYS.between(BASE_DATE, birth);
 
         // 3. 按位域结构组合各字段 (总共 56 位，不含校验码)
-        long encodedResult = 0L;
+        long result = 0L;
         // 预留高位 [63-56] 保持为 0，确保兼容性
-        encodedResult |= ((long) administrativeCode & 0xFFFFFL) << 36; // 20 位地址码 -> [55-36] 位
-        encodedResult |= (daysOffset & 0x3FFFFFL) << 14;               // 22 位生日码 -> [35-14] 位
-        encodedResult |= ((long) sequenceNumber & 0x3FFL) << 4;        // 10 位顺序码 -> [13- 4] 位
-        encodedResult |= (VERSION & 0xFL);                             //  4 位版本号 -> [ 3- 0] 位
-        return encodedResult;
+        result |= ((long) administrativeCode & 0xFFFFFL) << 36; // 20 位地址码 -> [55-36] 位
+        result |= (daysOffset & 0x3FFFFFL) << 14;               // 22 位生日码 -> [35-14] 位
+        result |= ((long) sequenceNumber & 0x3FFL) << 4;        // 10 位顺序码 -> [13- 4] 位
+        result |= (VERSION & 0xFL);                             //  4 位版本号 -> [ 3- 0] 位
+        return result;
     }
 
     /**
@@ -105,23 +105,23 @@ public class SimpleIdentityCodec implements IdentityCodec {
         int sequenceNumber = (int) ((encoded >>> 4) & 0x3FFL); // 提取10位顺序码 [13-4]
 
         // 5. 根据天数偏移计算出生日期
-        LocalDate birthDate = BASE_DATE.plusDays(daysOffset);
+        LocalDate birth = BASE_DATE.plusDays(daysOffset);
 
         // 6. 校验年份是否为四位数（年份应在 0000-9999 范围内）
-        int birthYear = birthDate.getYear();
-        if (birthYear < 0 || birthYear > 9999) {
-            throw new InvalidEncodingException(InvalidEncodingException.ErrorCode.INVALID_BIT_FIELD, "Birth year out of range: " + birthYear);
+        int year = birth.getYear();
+        if (year < 0 || year > 9999) {
+            throw new InvalidEncodingException(InvalidEncodingException.ErrorCode.INVALID_BIT_FIELD, "Birth year out of range: " + year);
         }
 
         // 7. 使用优化的方法组装前17位，避免 String.format() 开销
         char[] buffer = new char[18];
         
         // 直接填充字符数组，避免字符串格式化开销
-        appendNumber(buffer, 0, administrativeCode, 6);  // 6位地址码
-        appendNumber(buffer, 6, birthDate.getYear(), 4); // 4位年份
-        appendNumber(buffer, 10, birthDate.getMonthValue(), 2);  // 2位月份
-        appendNumber(buffer, 12, birthDate.getDayOfMonth(), 2);  // 2位日期
-        appendNumber(buffer, 14, sequenceNumber, 3);     // 3位顺序码
+        appendNumber(buffer, administrativeCode, 0, 6);  // 6位地址码
+        appendNumber(buffer, birth.getYear(), 6, 4); // 4位年份
+        appendNumber(buffer, birth.getMonthValue(), 10, 2);  // 2位月份
+        appendNumber(buffer, birth.getDayOfMonth(), 12, 2);  // 2位日期
+        appendNumber(buffer, sequenceNumber, 14, 3);     // 3位顺序码
 
         // 8. 转换为字节数组并计算校验码
         byte[] bytes = new String(buffer).getBytes(StandardCharsets.ISO_8859_1);
@@ -137,11 +137,11 @@ public class SimpleIdentityCodec implements IdentityCodec {
      * 使用高效的数字转字符串算法
      *
      * @param buffer 字符数组缓冲区
-     * @param offset 起始位置
      * @param number 要转换的数字
+     * @param offset 起始位置
      * @param width  固定宽度（不足补0）
      */
-    private void appendNumber(char[] buffer, int offset, int number, int width) {
+    private void appendNumber(char[] buffer, int number, int offset, int width) {
         int pos = offset + width - 1;
         while (pos >= offset) {
             buffer[pos--] = (char) ('0' + (number % 10));
