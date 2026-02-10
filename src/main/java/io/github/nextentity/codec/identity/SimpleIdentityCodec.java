@@ -10,7 +10,7 @@ import java.time.temporal.ChronoUnit;
  * 位域分配 (共 56 位):
  * [63-56]: 预留位 ( 8 位) - 保持为 0
  * [55-36]: 地址码 (20 位) - 行政区划代码
- * [35-14]: 天偏移 (22 位) - 距离基准日期的天数
+ * [35-14]: 生日码 (22 位) - 距离基准日期的天数
  * [13- 4]: 顺序码 (10 位) - 同日出生人员序号
  * [ 3- 0]: 版本号 ( 4 位) - 编码版本标识
  * </pre>
@@ -59,7 +59,7 @@ public class SimpleIdentityCodec implements IdentityCodec {
         long encodedResult = 0L;
         // 预留高位 [63-56] 保持为 0，确保兼容性
         encodedResult |= ((long) administrativeCode & 0xFFFFFL) << 36; // 20 位地址码 -> [55-36] 位
-        encodedResult |= (daysOffset & 0x3FFFFFL) << 14;               // 22 位天偏移 -> [35-14] 位
+        encodedResult |= (daysOffset & 0x3FFFFFL) << 14;               // 22 位生日码 -> [35-14] 位
         encodedResult |= ((long) sequenceNumber & 0x3FFL) << 4;        // 10 位顺序码 -> [13- 4] 位
         encodedResult |= (VERSION & 0xFL);                             //  4 位版本号 -> [ 3- 0] 位
         return encodedResult;
