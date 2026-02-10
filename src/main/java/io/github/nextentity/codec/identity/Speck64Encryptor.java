@@ -69,7 +69,7 @@ public class Speck64Encryptor implements Encryptor {
      * @throws IllegalArgumentException 当字节数组长度不为16时抛出
      */
     public Speck64Encryptor(byte[] key) {
-        int[] intKey = bytes2Ints(key);
+        int[] intKey = bytesToInts(key);
         this(27, 8, 3, intKey);
     }
 
@@ -246,7 +246,7 @@ public class Speck64Encryptor implements Encryptor {
         return (value >>> bits) | (value << (32 - bits));
     }
 
-    public static int[] bytes2Ints(byte[] key) {
+    public static int[] bytesToInts(byte[] key) {
         if (key.length != 16) {
             throw new IllegalArgumentException("SPECK64/128 requires exactly 16 bytes (128 bits) as key");
         }
