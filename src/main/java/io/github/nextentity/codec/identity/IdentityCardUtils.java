@@ -67,7 +67,6 @@ public class IdentityCardUtils {
      *
      * @param identityNumber 18位身份证号码
      * @return true 如果校验码正确，false 否则
-     * @throws InvalidIdentityNumberException 当身份证号码格式不正确时抛出
      */
     public static boolean isValid(String identityNumber) {
         try {

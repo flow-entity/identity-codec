@@ -57,9 +57,9 @@ public class IdentityCardUtilsTest {
         assertFalse(IdentityCardUtils.isValid(invalidLenId),
                 "长度错误的身份证号码应该验证失败");
 
-        // 测试 null 输入应该抛出异常
+        // 测试 null 输入应该返回 false
         assertFalse(IdentityCardUtils.isValid(null),
-                "null 输入应该抛出异常");
+                "null 输入应该返回 false");
     }
 
     /**
