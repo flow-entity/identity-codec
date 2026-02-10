@@ -19,11 +19,11 @@ public class EncryptedIdentityCodec implements IdentityCodec {
     /**
      * 身份编码器实例
      */
-    private final IdentityCodec identityCodec;
+    private final IdentityCodec codec;
     /**
      * XOR 加密器实例
      */
-    private final Encryptor xorEncryptor;
+    private final Encryptor encryptor;
 
     /**
      * 构造函数 - 使用指定的加密密钥
@@ -35,9 +35,9 @@ public class EncryptedIdentityCodec implements IdentityCodec {
         this(new SimpleIdentityCodec(), new XorEncryptor(encryptionKey));
     }
 
-    public EncryptedIdentityCodec(IdentityCodec identityCodec, Encryptor xorEncryptor) {
-        this.identityCodec = Objects.requireNonNull(identityCodec, "identityCodec");
-        this.xorEncryptor = Objects.requireNonNull(xorEncryptor, "xorEncryptor");
+    public EncryptedIdentityCodec(IdentityCodec codec, Encryptor encryptor) {
+        this.codec = Objects.requireNonNull(codec, "codec");
+        this.encryptor = Objects.requireNonNull(encryptor, "encryptor");
     }
 
     /**
@@ -56,8 +56,8 @@ public class EncryptedIdentityCodec implements IdentityCodec {
      */
     @Override
     public long encode(String identityNumber) {
-        long encodedIdentity = identityCodec.encode(identityNumber);
-        return xorEncryptor.encrypt(encodedIdentity);
+        long encodedIdentity = codec.encode(identityNumber);
+        return encryptor.encrypt(encodedIdentity);
     }
 
     /**
@@ -76,8 +76,8 @@ public class EncryptedIdentityCodec implements IdentityCodec {
      */
     @Override
     public String decode(long encryptedValue) {
-        long decryptedIdentity = xorEncryptor.decrypt(encryptedValue);
-        return identityCodec.decode(decryptedIdentity);
+        long decryptedIdentity = encryptor.decrypt(encryptedValue);
+        return codec.decode(decryptedIdentity);
     }
 
     /**
@@ -85,8 +85,8 @@ public class EncryptedIdentityCodec implements IdentityCodec {
      *
      * @return SimpleIdentityCodec 实例
      */
-    IdentityCodec getIdentityCodec() {
-        return identityCodec;
+    IdentityCodec getCodec() {
+        return codec;
     }
 
     /**
@@ -94,7 +94,7 @@ public class EncryptedIdentityCodec implements IdentityCodec {
      *
      * @return XorEncryptor 实例
      */
-    Encryptor getXorEncryptor() {
-        return xorEncryptor;
+    Encryptor getEncryptor() {
+        return encryptor;
     }
 }

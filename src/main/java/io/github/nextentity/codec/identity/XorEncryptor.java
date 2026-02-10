@@ -33,24 +33,24 @@ public class XorEncryptor implements Encryptor {
      * 加密数据
      * 对输入的64位数据进行 XOR 加密
      *
-     * @param plaintextData 待加密的原始数据
+     * @param plaintext 待加密的原始数据
      * @return 加密后的数据
      */
     @Override
-    public long encrypt(long plaintextData) {
-        return plaintextData ^ encryptionKey;
+    public long encrypt(long plaintext) {
+        return plaintext ^ encryptionKey;
     }
 
     /**
      * 解密数据
      * 对输入的64位密文进行 XOR 解密
      *
-     * @param encryptedData 待解密的密文数据
+     * @param encrypted 待解密的密文数据
      * @return 解密后的明文数据
      */
     @Override
-    public long decrypt(long encryptedData) {
-        return encryptedData ^ encryptionKey;
+    public long decrypt(long encrypted) {
+        return encrypted ^ encryptionKey;
     }
 
 }

@@ -2,8 +2,8 @@ package io.github.nextentity.codec.identity;
 
 public interface Encryptor {
 
-    long encrypt(long plaintextData);
+    long encrypt(long plaintext);
 
-    long decrypt(long encryptedData);
+    long decrypt(long encrypted);
 
 }

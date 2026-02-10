@@ -11,15 +11,18 @@ import static org.junit.jupiter.api.Assertions.*;
  * EncryptedIdentityCodec 测试类
  * 测试加密身份编码器的功能
  */
-public class EncryptedIdentityCodecTest {
+public class AesEncryptedIdentityCodecTest {
 
     private EncryptedIdentityCodec encryptedCodec;
 
     @BeforeEach
     void setUp() {
         // 使用固定的测试密钥流
-        long testKeystream = new Random().nextLong();
-        encryptedCodec = new EncryptedIdentityCodec(testKeystream);
+        byte[] key = new byte[16];
+        new Random().nextBytes(key);
+        AesCtrEncryptor encryptor = new AesCtrEncryptor(key);
+        SimpleIdentityCodec codec = new SimpleIdentityCodec();
+        encryptedCodec = new EncryptedIdentityCodec(codec, encryptor);
     }
 
     /**
