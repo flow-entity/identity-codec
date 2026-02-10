@@ -71,7 +71,7 @@ public class IdentityCodecs {
      *
      * @param key 128位加密密钥，必须包含4个32位整数
      * @return EncryptedIdentityCodec实例，使用SPECK64加密
-     * @throws IllegalArgumentException 当密钥为null或长度不为16字节时抛出
+     * @throws IllegalArgumentException 当密钥为长度不为4(16字节)时抛出
      * @see Speck64Encryptor
      */
     public static IdentityCodec speck64Encrypt(int[] key) {

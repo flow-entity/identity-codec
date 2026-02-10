@@ -99,19 +99,9 @@ public class IdentityCardUtils {
 
         // 2. 日期格式和有效性验证
         try {
-            int month = Integer.parseInt(identityNumber.substring(10, 12));
-            if (month < 1 || month > 12) {
-                throw new InvalidIdentityNumberException(InvalidIdentityNumberException.ErrorCode.INVALID_MONTH,
-                        "Invalid month value: " + month);
-            }
-
-            int day = Integer.parseInt(identityNumber.substring(12, 14));
-            if (day < 1 || day > 31) {
-                throw new InvalidIdentityNumberException(InvalidIdentityNumberException.ErrorCode.INVALID_DAY,
-                        "Invalid day value: " + day);
-            }
-
             int year = Integer.parseInt(identityNumber.substring(6, 10));
+            int month = Integer.parseInt(identityNumber.substring(10, 12));
+            int day = Integer.parseInt(identityNumber.substring(12, 14));
 
             // 详细日期验证（包括闰年、每月天数等）
             var _ = LocalDate.of(year, month, day);

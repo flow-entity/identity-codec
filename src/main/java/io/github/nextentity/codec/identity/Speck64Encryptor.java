@@ -144,15 +144,15 @@ public class Speck64Encryptor implements Encryptor {
      */
     private int[] generateRoundKeys() {
         int[] schedule = new int[key.length - 1];
-        int[] round = new int[rounds];
+        int[] roundKeys = new int[rounds];
         System.arraycopy(key, 0, schedule, 0, key.length - 1);
-        round[0] = key[key.length - 1];
+        roundKeys[0] = key[key.length - 1];
 
         for (int i = 0; i < rounds - 1; i++) {
-            schedule[i % schedule.length] = (ror(schedule[i % schedule.length], alpha) + round[i]) ^ i;
-            round[i + 1] = rol(round[i], beta) ^ schedule[i % schedule.length];
+            schedule[i % schedule.length] = (ror(schedule[i % schedule.length], alpha) + roundKeys[i]) ^ i;
+            roundKeys[i + 1] = rol(roundKeys[i], beta) ^ schedule[i % schedule.length];
         }
-        return round;
+        return roundKeys;
     }
 
     /**

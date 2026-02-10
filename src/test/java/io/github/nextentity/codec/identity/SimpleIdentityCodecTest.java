@@ -109,7 +109,7 @@ public class SimpleIdentityCodecTest {
         // 测试边界日期处理逻辑
         String[] boundaryTestCases = {
                 "110101000101010011", // 基准日期 - 最小边界 (公元元年)
-                "11010100010101109X", // 基准日期带X校验码
+                "11010100010101109X", // 基准日期带 X 校验码
                 "110101999912319991"  // 接近公元9999年
         };
 
@@ -140,14 +140,14 @@ public class SimpleIdentityCodecTest {
     }
 
     /**
-     * 测试校验码包含X的情况
+     * 测试校验码包含 X 的情况
      */
     @Test
     void testCheckCodeWithX() {
         String idWithX = "11010119900307109X";
         long encoded = codec.encode(idWithX);
         String decoded = codec.decode(encoded);
-        assertEquals(idWithX, decoded, "校验码X测试失败");
+        assertEquals(idWithX, decoded, "校验码 X 测试失败");
     }
 
     /**
@@ -158,14 +158,14 @@ public class SimpleIdentityCodecTest {
     void testCheckDigitCaseHandling() {
         logger.info("=== 校验码大小写处理测试 ===");
 
-        // 测试大写X
+        // 测试大写 X
         String upperXId = "11010119900307109X";
         logger.info("测试大写X: {}", upperXId);
 
         try {
             long encodedUpper = codec.encode(upperXId);
             String decodedUpper = codec.decode(encodedUpper);
-            assertEquals(upperXId, decodedUpper, "大写X处理失败");
+            assertEquals(upperXId, decodedUpper, "大写 X 处理失败");
             logger.info("  ✓ 大写X编码: {}", encodedUpper);
             logger.info("  ✓ 大写X解码: {}", decodedUpper);
         } catch (Exception e) {
@@ -174,7 +174,7 @@ public class SimpleIdentityCodecTest {
 
         // 测试小写x - 验证编码时能正确处理，解码时转换为大写X
         String lowerXId = "11010119900307109x";
-        String expectedDecoded = "11010119900307109X"; // 解码后应该是大写X
+        String expectedDecoded = "11010119900307109X"; // 解码后应该是大写 X
         logger.info("测试小写x: {}", lowerXId);
         logger.info("期望解码结果: {}", expectedDecoded);
 
@@ -257,7 +257,7 @@ public class SimpleIdentityCodecTest {
 
         // 验证基准日期本身是允许的
         String baseDateId = "110101000001011236"; // 基准日期0000-01-01
-        logger.info("验证基准日期: " + baseDateId);
+        logger.info("验证基准日期: {}", baseDateId);
         try {
             long encoded = codec.encode(baseDateId);
             String decoded = codec.decode(encoded);
@@ -327,7 +327,7 @@ public class SimpleIdentityCodecTest {
         long endTime = System.nanoTime();
         long duration = (endTime - startTime) / 1_000_000; // 转换为毫秒
 
-        logger.info("批量性能测试完成，耗时: " + duration + " ms");
+        logger.info("批量性能测试完成，耗时: {} ms", duration);
         assertTrue(duration < 5000, "性能测试应该在5秒内完成");
     }
 
@@ -361,13 +361,13 @@ public class SimpleIdentityCodecTest {
         int[] unsupportedVersions = {0, 2, 3, 15}; // 不支持的版本号
 
         for (int version : unsupportedVersions) {
-            logger.info("测试不支持的版本 " + version);
+            logger.info("测试不支持的版本 {}", version);
 
             // 构造包含特定版本号的long值
             // 版本号在最低4位 [3-0]
             // 只设置版本号位
 
-            // 验证应该抛出InvalidEncodingException异常
+            // 验证应该抛出 InvalidEncodingException 异常
             Exception exception = assertThrows(InvalidEncodingException.class, () -> codec.decode(version), "不支持的版本号应该抛出异常");
 
             // 验证异常消息包含正确的版本信息
@@ -376,7 +376,7 @@ public class SimpleIdentityCodecTest {
                        exception.getMessage().contains("不支持"),
                     "异常消息应该包含版本错误信息: " + expectedMessage);
 
-            logger.info("  ✓ 正确抛出异常: " + exception.getMessage());
+            logger.info("  ✓ 正确抛出异常: {}", exception.getMessage());
         }
 
         // 验证支持的版本号(版本1)能正常工作
