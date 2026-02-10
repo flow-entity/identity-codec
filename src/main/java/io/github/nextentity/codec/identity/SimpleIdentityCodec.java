@@ -91,15 +91,27 @@ public class SimpleIdentityCodec implements IdentityCodec {
             throw new InvalidEncodingException("Unsupported compression version: " + version);
         }
 
-        // 3. 按位域分别提取各字段（不包含校验码）
+        // 3. 校验预留位是否为0 ([63-60] 位)
+        long reservedBits = (encoded >>> 60) & 0xFL;
+        if (reservedBits != 0) {
+            throw new InvalidEncodingException("Reserved bits must be zero, but got: " + reservedBits);
+        }
+
+        // 4. 按位域分别提取各字段（不包含校验码）
         int administrativeCode = (int) ((encoded >>> 40) & 0xFFFFFL); // 提取20位地址码 [59-40]
         long daysOffset = (encoded >>> 18) & 0x3FFFFFL; // 提取22位天数 [39-18]
         int sequenceNumber = (int) ((encoded >>> 8) & 0x3FFL); // 提取10位顺序码 [17-8]
 
-        // 4. 根据天数偏移计算出生日期
+        // 5. 根据天数偏移计算出生日期
         LocalDate birthDate = BASE_DATE.plusDays(daysOffset);
 
-        // 5. 组装前17位，然后计算校验码
+        // 6. 校验年份是否为四位数（年份应在 0000-9999 范围内）
+        int birthYear = birthDate.getYear();
+        if (birthYear < 0 || birthYear > 9999) {
+            throw new InvalidEncodingException("Birth year must be a 4-digit number, but got: " + birthYear);
+        }
+
+        // 7. 组装前17位，然后计算校验码
         String first17Chars = String.format("%06d%04d%02d%02d%03d",
                 administrativeCode, // 6位地址码
                 birthDate.getYear(), // 4位年份
@@ -107,7 +119,7 @@ public class SimpleIdentityCodec implements IdentityCodec {
                 birthDate.getDayOfMonth(), // 2位日期
                 sequenceNumber); // 3位顺序码
 
-        // 6. 返回完整的18位身份证号码
+        // 8. 返回完整的18位身份证号码
         return IdentityCheckCodeCalculator.generateCompleteId(first17Chars);
     }
 }
