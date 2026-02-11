@@ -4,6 +4,7 @@ package io.github.nextentity.codec.identity;
  * 测试常量类 - 统一管理测试中使用的常量数据
  * 避免重复的硬编码值，提高测试维护性
  */
+@SuppressWarnings("SpellCheckingInspection")
 public final class TestConstants {
 
     private TestConstants() {
@@ -209,7 +210,7 @@ public final class TestConstants {
     };
 
     /**
-     * InvalidEncodingException的错误码数组
+     * IdentityCodecException的错误码数组
      */
     public static final ErrorCode[] ENCODING_ERROR_CODES = {
             ErrorCode.UNSUPPORTED_VERSION,

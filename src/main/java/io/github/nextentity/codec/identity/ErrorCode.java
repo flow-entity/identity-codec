@@ -58,12 +58,7 @@ public enum ErrorCode {
     /**
      * 无效的位域提取
      */
-    INVALID_BIT_FIELD("IDC-003", "Invalid bit field extraction"),
-    /**
-     * 无效的长度
-     */
-    INVALID_LENGTH("IDC-004", "Invalid length"),
-    ;
+    INVALID_BIT_FIELD("IDC-003", "Invalid bit field extraction");
 
     private final String code;
     private final String description;
