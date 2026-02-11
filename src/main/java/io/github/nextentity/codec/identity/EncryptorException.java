@@ -15,19 +15,11 @@ public class EncryptorException extends IdentityCodecException {
     @Serial
     private static final long serialVersionUID = 6749382019357218932L;
 
-    public EncryptorException(String message) {
-        super(message);
-    }
-
-    public EncryptorException(ErrorCode errorCode, String detail) {
-        super(errorCode, detail);
-    }
-
-    public EncryptorException(ErrorCode errorCode, String detail, Throwable cause) {
-        super(errorCode, detail, cause);
-    }
-
     public EncryptorException(String message, Throwable cause) {
         super(message, cause);
+    }
+
+    public EncryptorException(String message) {
+        super(message);
     }
 }

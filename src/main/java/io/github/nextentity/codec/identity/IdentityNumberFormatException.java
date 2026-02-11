@@ -18,14 +18,6 @@ public class IdentityNumberFormatException extends IdentityCodecException {
         super(message);
     }
 
-    public IdentityNumberFormatException(ErrorCode errorCode, String detail) {
-        super(errorCode, detail);
-    }
-
-    public IdentityNumberFormatException(ErrorCode errorCode, String detail, Throwable cause) {
-        super(errorCode, detail, cause);
-    }
-
     public IdentityNumberFormatException(String message, Throwable cause) {
         super(message, cause);
     }

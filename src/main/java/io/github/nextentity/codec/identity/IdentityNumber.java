@@ -66,6 +66,84 @@ public final class IdentityNumber {
         return new IdentityNumber(number, bytes, address, year, month, day, sequence).validateFormat();
     }
 
+    public String number() {
+        return number;
+    }
+
+    public int address() {
+        return address;
+    }
+
+    public short year() {
+        return year;
+    }
+
+    public byte month() {
+        return month;
+    }
+
+    public byte day() {
+        return day;
+    }
+
+    public short sequence() {
+        return sequence;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        IdentityNumber that = (IdentityNumber) obj;
+        return number.equals(that.number);
+    }
+
+    @Override
+    public int hashCode() {
+        return number.hashCode();
+    }
+
+    @Override
+    public @NonNull String toString() {
+        return number;
+    }
+
+    private static int parse(byte[] number, int start, int end) {
+        int result = 0;
+        for (int i = start; i < end; i++) {
+            byte c = number[i];
+            result = result * 10 + (c - '0');
+        }
+        return result;
+    }
+
+    private static void format(byte[] buffer, int number, int offset, int width) {
+        int pos = offset + width - 1;
+        while (pos >= offset) {
+            buffer[pos--] = (byte) ('0' + (number % 10));
+            number /= 10;
+        }
+    }
+
+
+    private IdentityNumber validateParse() {
+        for (int i = 0; i < 17; i++) {
+            if (bytes[i] < '0' || bytes[i] > '9') {
+                throw new IdentityNumberFormatException("Invalid character at position " + i + ": " + bytes[i]);
+            }
+        }
+        byte checksum = bytes[17];
+        if (checksum != 'X' && (checksum < '0' || checksum > '9')) {
+            throw new IdentityNumberFormatException("Invalid checksum character: " + (char) checksum);
+        }
+        byte[] bytes = this.bytes;
+        byte expected = calculateChecksum(bytes);
+        if (bytes[17] != expected) {
+            throw new IdentityNumberFormatException("Invalid checksum: expected " + (char) expected + ", but got " + (char)checksum);
+        }
+        return this;
+    }
+
     private IdentityNumber validateFormat() {
         if (address < 0 || address > 999999) {
             throw new IdentityNumberFormatException("Invalid address format: " + address);
@@ -101,77 +179,6 @@ public final class IdentityNumber {
             throw new IdentityNumberFormatException("Invalid checksum format: " + checksum);
         }
 
-        return this;
-    }
-
-    public String number() {
-        return number;
-    }
-
-    public int address() {
-        return address;
-    }
-
-    public short year() {
-        return year;
-    }
-
-    public byte month() {
-        return month;
-    }
-
-    public byte day() {
-        return day;
-    }
-
-    public short sequence() {
-        return sequence;
-    }
-
-    @Override
-    public int hashCode() {
-        return number.hashCode();
-    }
-
-    @Override
-    public @NonNull String toString() {
-        return number;
-    }
-
-
-    private static int parse(byte[] number, int start, int end) {
-        int result = 0;
-        for (int i = start; i < end; i++) {
-            byte c = number[i];
-            result = result * 10 + (c - '0');
-        }
-        return result;
-    }
-
-    private static void format(byte[] buffer, int number, int offset, int width) {
-        int pos = offset + width - 1;
-        while (pos >= offset) {
-            buffer[pos--] = (byte) ('0' + (number % 10));
-            number /= 10;
-        }
-    }
-
-
-    private IdentityNumber validateParse() {
-        for (int i = 0; i < 17; i++) {
-            if (bytes[i] < '0' || bytes[i] > '9') {
-                throw new IdentityNumberFormatException("Invalid character at position " + i + ": " + bytes[i]);
-            }
-        }
-        byte checksum = bytes[17];
-        if (checksum != 'X' && (checksum < '0' || checksum > '9')) {
-            throw new IdentityNumberFormatException("Invalid checksum character: " + (char) checksum);
-        }
-        byte[] bytes = this.bytes;
-        byte expected = calculateChecksum(bytes);
-        if (bytes[17] != expected) {
-            throw new IdentityNumberFormatException("Invalid checksum: expected " + (char) expected + ", but got " + checksum);
-        }
         return this;
     }
 

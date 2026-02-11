@@ -26,7 +26,7 @@ public final class TestConstants {
     /**
      * 包含小写x的身份证号码（用于测试大小写处理）
      */
-    public static final String VALID_ID_CARD_LOWER_X = "11010519900307109x";
+    public static final String VALID_ID_CARD_LOWER_X = "11010100010101109x";
     
     /**
      * 上海地区的身份证号码
@@ -197,28 +197,7 @@ public final class TestConstants {
             0xAAAAAAAAAAAAAAAAL          // 交替位（反）
     };
     
-    // ==================== 错误码常量 ====================
-    
-    /**
-     * InvalidIdentityNumberException的错误码数组
-     */
-    public static final ErrorCode[] ID_NUMBER_ERROR_CODES = {
-            ErrorCode.INVALID_ID_LENGTH,
-            ErrorCode.INVALID_CHECK_CODE,
-            ErrorCode.INVALID_CHARACTER,
-            ErrorCode.INVALID_DATE
-    };
-
-    /**
-     * IdentityCodecException的错误码数组
-     */
-    public static final ErrorCode[] ENCODING_ERROR_CODES = {
-            ErrorCode.UNSUPPORTED_VERSION,
-            ErrorCode.RESERVED_BITS_NOT_ZERO,
-            ErrorCode.INVALID_BIT_FIELD
-    };
-    
-    // ==================== 性能测试常量 ====================
+    // ==================== Performance test constants ====================
     
     /**
      * 性能测试的迭代次数

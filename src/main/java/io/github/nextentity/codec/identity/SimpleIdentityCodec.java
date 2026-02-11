@@ -89,8 +89,7 @@ public class SimpleIdentityCodec implements IdentityCodec {
         // 2. 版本路由检查（当前仅支持版本1）
         if (version != 1) {
             throw new IdentityCodecException(
-                    ErrorCode.UNSUPPORTED_VERSION,
-                    String.valueOf(version)
+                    "Unsupported encoding version: " + version
             );
         }
 
@@ -98,8 +97,7 @@ public class SimpleIdentityCodec implements IdentityCodec {
         long reservedBits = (encoded >>> 56) & 0xFFL;
         if (reservedBits != 0) {
             throw new IdentityCodecException(
-                    ErrorCode.RESERVED_BITS_NOT_ZERO,
-                    String.valueOf(reservedBits)
+                    "Reserved bits must be zero, but got: " + reservedBits
             );
         }
 

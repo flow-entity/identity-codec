@@ -370,11 +370,10 @@ public class SimpleIdentityCodecTest {
             // 验证应该抛出 InvalidEncodingException 异常
             Exception exception = assertThrows(IdentityCodecException.class, () -> codec.decode(version).number(), "不支持的版本号应该抛出异常");
 
-            // 验证异常消息包含正确的版本信息
-            String expectedMessage = "Unsupported compression version: " + version;
-            assertTrue(exception.getMessage().contains(expectedMessage) ||
-                       exception.getMessage().contains("不支持"),
-                    "异常消息应该包含版本错误信息: " + expectedMessage);
+            // Verify exception message contains correct version info
+            String expectedMessage = "Unsupported encoding version: " + version;
+            assertTrue(exception.getMessage().contains(expectedMessage),
+                    "Exception message should contain version error info: " + expectedMessage);
 
             logger.info("  ✓ 正确抛出异常: {}", exception.getMessage());
         }
