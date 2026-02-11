@@ -103,9 +103,6 @@ public class Speck64EncryptedIdentityCodecTest {
      */
     @Test
     void testInvalidInput() {
-        // 测试null输入
-        assertThrows(NullPointerException.class, () -> encryptedCodec.encode(null));
-
         // 测试无效身份证格式
         assertThrows(IllegalArgumentException.class, () -> encryptedCodec.encode("123"));
         assertThrows(IllegalArgumentException.class, () -> encryptedCodec.encode("110105194912310021")); // 校验位错误

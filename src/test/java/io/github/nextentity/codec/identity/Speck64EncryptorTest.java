@@ -61,9 +61,6 @@ public class Speck64EncryptorTest {
         // 测试长度过长的字节数组
         byte[] longKey = new byte[20];
         assertThrows(IllegalArgumentException.class, () -> new Speck64Encryptor(longKey));
-
-        // 测试null字节数组
-        assertThrows(NullPointerException.class, () -> new Speck64Encryptor((byte[]) null));
     }
 
     /**

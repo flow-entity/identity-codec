@@ -30,11 +30,7 @@ public class InvalidEncodingException extends IllegalArgumentException {
         /**
          * 无效的位域提取
          */
-        INVALID_BIT_FIELD("IEC-003", "Invalid bit field extraction"),
-        /**
-         * 解密操作失败
-         */
-        DECRYPTION_FAILED("IEC-004", "Decryption operation failed");
+        INVALID_BIT_FIELD("IEC-003", "Invalid bit field extraction");
 
         private final String code;
         private final String description;
