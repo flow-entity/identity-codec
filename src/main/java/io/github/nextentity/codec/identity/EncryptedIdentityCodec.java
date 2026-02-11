@@ -1,5 +1,6 @@
 package io.github.nextentity.codec.identity;
 
+import org.jspecify.annotations.NonNull;
 import java.util.Objects;
 
 /**
@@ -67,7 +68,7 @@ public class EncryptedIdentityCodec implements IdentityCodec {
      * @param codec     身份编码器实例
      * @param encryptor 加密器实例
      */
-    public EncryptedIdentityCodec(IdentityCodec codec, Encryptor encryptor) {
+    public EncryptedIdentityCodec(@NonNull IdentityCodec codec, @NonNull Encryptor encryptor) {
         this.codec = Objects.requireNonNull(codec, "codec");
         this.encryptor = Objects.requireNonNull(encryptor, "encryptor");
     }
@@ -87,7 +88,7 @@ public class EncryptedIdentityCodec implements IdentityCodec {
      * @see SimpleIdentityCodec#encode(String)
      */
     @Override
-    public long encode(String identityNumber) {
+    public long encode(@NonNull String identityNumber) {
         long encodedIdentity = codec.encode(identityNumber);
         return encryptor.encrypt(encodedIdentity);
     }
@@ -107,7 +108,7 @@ public class EncryptedIdentityCodec implements IdentityCodec {
      * @see SimpleIdentityCodec#decode(long)
      */
     @Override
-    public String decode(long encryptedValue) {
+    public @NonNull String decode(long encryptedValue) {
         long decryptedIdentity = encryptor.decrypt(encryptedValue);
         return codec.decode(decryptedIdentity);
     }

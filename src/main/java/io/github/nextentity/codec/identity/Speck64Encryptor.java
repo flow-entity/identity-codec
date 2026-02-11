@@ -1,5 +1,6 @@
 package io.github.nextentity.codec.identity;
 
+import org.jspecify.annotations.NonNull;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
@@ -67,7 +68,7 @@ public class Speck64Encryptor implements Encryptor {
      * @param key 128位加密密钥字节数组，长度必须为16字节
      * @throws IllegalArgumentException 当字节数组长度不为16时抛出
      */
-    public Speck64Encryptor(byte[] key) {
+    public Speck64Encryptor(byte @NonNull [] key) {
         int[] intKey = bytesToInts(key);
         this(27, 8, 3, intKey);
     }
@@ -79,7 +80,7 @@ public class Speck64Encryptor implements Encryptor {
      * @param key 128位加密密钥，必须包含4个32位整数
      * @throws IllegalArgumentException 当密钥数组长度不为4时抛出
      */
-    public Speck64Encryptor(int[] key) {
+    public Speck64Encryptor(int @NonNull [] key) {
         if (key.length != 4) {
             throw new IllegalArgumentException("SPECK64/128 requires exactly 4 integers (128 bits) as key");
         }
@@ -119,7 +120,7 @@ public class Speck64Encryptor implements Encryptor {
      * @param key    128位加密密钥，必须包含4个32位整数
      * @throws IllegalArgumentException 当密钥数组长度不为4时抛出
      */
-    public Speck64Encryptor(int rounds, int alpha, int beta, int[] key) {
+    public Speck64Encryptor(int rounds, int alpha, int beta, int @NonNull [] key) {
         checkKeyLength(key);
         this.rounds = rounds;
         this.alpha = alpha;

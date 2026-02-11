@@ -13,9 +13,18 @@
         <maven.compiler.target>25</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <junit.version>5.10.0</junit.version>
+        <jspecify.version>1.0.0</jspecify.version>
     </properties>
 
     <dependencies>
+        <!-- JSpecify null 安全注解 -->
+        <dependency>
+            <groupId>org.jspecify</groupId>
+            <artifactId>jspecify</artifactId>
+            <version>${jspecify.version}</version>
+            <scope>compile</scope>
+        </dependency>
+
         <!-- JUnit 5 测试框架 -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
@@ -23,7 +32,7 @@
             <version>${junit.version}</version>
             <scope>test</scope>
         </dependency>
-        
+
         <!-- SLF4J 日志框架 -->
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -31,7 +40,7 @@
             <version>2.0.9</version>
             <scope>test</scope>
         </dependency>
-        
+
         <!-- SLF4J Simple 实现（用于测试） -->
         <dependency>
             <groupId>org.slf4j</groupId>

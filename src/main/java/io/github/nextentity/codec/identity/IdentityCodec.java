@@ -1,5 +1,7 @@
 package io.github.nextentity.codec.identity;
 
+import org.jspecify.annotations.NonNull;
+
 /**
  * 身份编码器接口
  *
@@ -33,7 +35,7 @@ public interface IdentityCodec {
      * @return 编码后的 long 值
      * @throws InvalidIdentityNumberException 当输入格式不正确时抛出
      */
-    long encode(String identityNumber);
+    long encode(@NonNull String identityNumber);
 
     /**
      * 将 long 类型的编码解码为身份证号码
@@ -42,5 +44,5 @@ public interface IdentityCodec {
      * @return 18 位身份证号码字符串
      * @throws InvalidEncodingException 当解码失败时抛出
      */
-    String decode(long encoded);
+    @NonNull String decode(long encoded);
 }

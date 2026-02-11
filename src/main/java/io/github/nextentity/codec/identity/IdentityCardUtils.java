@@ -1,9 +1,10 @@
 package io.github.nextentity.codec.identity;
 
+import org.jspecify.annotations.NonNull;
+
 import java.nio.charset.StandardCharsets;
 import java.time.DateTimeException;
 import java.time.LocalDate;
-import java.util.Objects;
 
 /**
  * 身份证号码工具类
@@ -40,8 +41,8 @@ public class IdentityCardUtils {
      * @return 计算得到的校验码字符（'0'-'9' 或 'X'）
      * @throws InvalidIdentityNumberException 当身份证号码格式不正确时抛出
      */
-    public static char calculateCheckCode(String identityNumber) {
-        byte[] chars = Objects.requireNonNull(identityNumber).getBytes(StandardCharsets.ISO_8859_1);
+    public static char calculateCheckCode(@NonNull String identityNumber) {
+        byte[] chars = identityNumber.getBytes(StandardCharsets.ISO_8859_1);
         return calculateCheckCode(chars);
     }
 
@@ -81,7 +82,7 @@ public class IdentityCardUtils {
      * @param identityNumber 18位身份证号码
      * @return true 如果校验码正确，false 否则
      */
-    public static boolean isValid(String identityNumber) {
+    public static boolean isValid(@NonNull String identityNumber) {
         try {
             validate(identityNumber);
             return true;
@@ -96,8 +97,8 @@ public class IdentityCardUtils {
      * @param identityNumber 18位身份证号码
      * @throws InvalidIdentityNumberException 当身份证号码格式不正确或校验码不正确时抛出
      */
-    public static void validate(String identityNumber) {
-        byte[] bytes = Objects.requireNonNull(identityNumber).getBytes(StandardCharsets.ISO_8859_1);
+    public static void validate(@NonNull String identityNumber) {
+        byte[] bytes = identityNumber.getBytes(StandardCharsets.ISO_8859_1);
         validate(bytes);
     }
 
@@ -164,8 +165,8 @@ public class IdentityCardUtils {
      * @return 完整的18位身份证号码
      * @throws InvalidIdentityNumberException 当输入格式不正确时抛出
      */
-    public static String appendCheckCode(String first17Chars) {
-        if (first17Chars == null || first17Chars.length() != 17) {
+    public static @NonNull String appendCheckCode(@NonNull String first17Chars) {
+        if (first17Chars.length() != 17) {
             throw new InvalidIdentityNumberException(
                     InvalidIdentityNumberException.ErrorCode.INVALID_LENGTH,
                     "Input must be exactly 17 digits"

@@ -1,5 +1,6 @@
 package io.github.nextentity.codec.identity;
 
+import org.jspecify.annotations.NonNull;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
@@ -43,7 +44,7 @@ public class SimpleIdentityCodec implements IdentityCodec {
      * @see #decode(long)
      */
     @Override
-    public long encode(String identityNumber) {
+    public long encode(@NonNull String identityNumber) {
         byte[] buffer = identityNumber.getBytes(StandardCharsets.ISO_8859_1);
         IdentityCardUtils.validate(buffer);
         // 1. 解析 18 位身份证号码各组成部分（不存储校验码）
@@ -84,7 +85,7 @@ public class SimpleIdentityCodec implements IdentityCodec {
      * @see #encode(String)
      */
     @Override
-    public String decode(long encoded) {
+    public @NonNull String decode(long encoded) {
         // 1. 提取版本号 ([3-0] 位)
         int version = (int) (encoded & 0xFL);
 

@@ -1,5 +1,7 @@
 package io.github.nextentity.codec.identity;
 
+import org.jspecify.annotations.NonNull;
+
 /**
  * 身份编码器工厂类
  * <p>
@@ -45,7 +47,7 @@ public class IdentityCodecs {
      * @see Speck64Encryptor
      * @see #speck64Encrypt(int[])
      */
-    public static IdentityCodec speck64Encrypt(byte[] key) {
+    public static @NonNull IdentityCodec speck64Encrypt(byte @NonNull [] key) {
         IdentityCodec codec = new SimpleIdentityCodec();
         Encryptor encryptor = new Speck64Encryptor(key);
         return new EncryptedIdentityCodec(codec, encryptor);
@@ -75,7 +77,7 @@ public class IdentityCodecs {
      * @throws IllegalArgumentException 当密钥为长度不为4(16字节)时抛出
      * @see Speck64Encryptor
      */
-    public static IdentityCodec speck64Encrypt(int[] key) {
+    public static @NonNull IdentityCodec speck64Encrypt(int @NonNull [] key) {
         IdentityCodec codec = new SimpleIdentityCodec();
         Encryptor encryptor = new Speck64Encryptor(key);
         return new EncryptedIdentityCodec(codec, encryptor);
