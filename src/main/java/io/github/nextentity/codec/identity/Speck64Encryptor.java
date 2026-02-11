@@ -1,6 +1,7 @@
 package io.github.nextentity.codec.identity;
 
 import org.jspecify.annotations.NonNull;
+
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
@@ -32,10 +33,9 @@ import java.nio.ByteOrder;
 public class Speck64Encryptor implements Encryptor {
 
     /**
-     * 加密轮数
-     * SPECK64/128标准使用27轮，但可以通过构造函数自定义
+     * 每轮的加密密钥数组
      */
-    private final int rounds;
+    private final int[] keys;
 
     /**
      * 右旋转位数
@@ -48,18 +48,6 @@ public class Speck64Encryptor implements Encryptor {
      * 标准SPECK64使用3位左旋转
      */
     private final int beta;
-
-    /**
-     * 128位加密密钥
-     * 拆分为4个32位整数数组，用于密钥调度算法
-     */
-    private final int[] key;
-
-    /**
-     * 预计算的加密轮密钥
-     * 在构造函数中生成，加密时直接使用，避免重复计算
-     */
-    private final int[] roundKeys;
 
     /**
      * 字节数组构造函数
@@ -122,11 +110,9 @@ public class Speck64Encryptor implements Encryptor {
      */
     public Speck64Encryptor(int rounds, int alpha, int beta, int @NonNull [] key) {
         checkKeyLength(key);
-        this.rounds = rounds;
         this.alpha = alpha;
         this.beta = beta;
-        this.key = key;
-        this.roundKeys = generateRoundKeys();
+        this.keys = generateKeys(key, rounds);
     }
 
     /**
@@ -147,17 +133,17 @@ public class Speck64Encryptor implements Encryptor {
      *
      * @return 轮密钥数组
      */
-    private int[] generateRoundKeys() {
+    public int[] generateKeys(int[] key, int rounds) {
         int[] schedule = new int[key.length - 1];
-        int[] roundKeys = new int[rounds];
+        int[] result = new int[rounds];
         System.arraycopy(key, 0, schedule, 0, key.length - 1);
-        roundKeys[0] = key[key.length - 1];
+        result[0] = key[key.length - 1];
 
         for (int i = 0; i < rounds - 1; i++) {
-            schedule[i % schedule.length] = (ror(schedule[i % schedule.length], alpha) + roundKeys[i]) ^ i;
-            roundKeys[i + 1] = rol(roundKeys[i], beta) ^ schedule[i % schedule.length];
+            schedule[i % schedule.length] = (ror(schedule[i % schedule.length], alpha) + result[i]) ^ i;
+            result[i + 1] = rol(result[i], beta) ^ schedule[i % schedule.length];
         }
-        return roundKeys;
+        return result;
     }
 
     /**
@@ -182,12 +168,11 @@ public class Speck64Encryptor implements Encryptor {
         // 将 64 位 long 拆分为两个 32 位 int (high, low)
         int high = (int) (plaintext >> 32);
         int low = (int) (plaintext & 0xFFFFFFFFL);
-
         // 加密循环 - 执行指定轮数的Feistel变换
-        for (int i = 0; i < rounds; i++) {
+        for (int key : keys) {
             // 轮函数 - SPECK的核心变换
             // 1. 高位右旋转并与低位相加，再与子密钥异或
-            high = (ror(high, alpha) + low) ^ roundKeys[i];
+            high = (ror(high, alpha) + low) ^ key;
             // 2. 低位左旋转并与新的高位异或
             low = rol(low, beta) ^ high;
         }
@@ -217,10 +202,9 @@ public class Speck64Encryptor implements Encryptor {
         int high = (int) (ciphertext >> 32);
         int low = (int) (ciphertext & 0xFFFFFFFFL);
 
-        // 反向加密循环 - 按相反顺序执行轮函数
-        for (int i = rounds - 1; i >= 0; i--) {
+        for (int i = keys.length - 1; i >= 0; i--) {
             low = ror(low ^ high, beta);
-            high = rol((high ^ roundKeys[i]) - low, alpha);
+            high = rol((high ^ keys[i]) - low, alpha);
         }
 
         return ((long) high << 32) | (low & 0xFFFFFFFFL);

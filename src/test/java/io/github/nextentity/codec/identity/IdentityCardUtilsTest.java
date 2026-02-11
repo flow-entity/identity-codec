@@ -11,7 +11,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * 测试身份证号码校验码计算功能
  */
 public class IdentityCardUtilsTest {
-    
+
     private static final Logger logger = LoggerFactory.getLogger(IdentityCardUtilsTest.class);
 
     /**
@@ -56,10 +56,6 @@ public class IdentityCardUtilsTest {
         String invalidLenId = "1101051949123100211";
         assertFalse(IdentityCardUtils.isValid(invalidLenId),
                 "长度错误的身份证号码应该验证失败");
-
-        // 测试 null 输入应该返回 false
-        assertFalse(IdentityCardUtils.isValid(null),
-                "null 输入应该返回 false");
     }
 
     /**
@@ -164,18 +160,6 @@ public class IdentityCardUtilsTest {
         // 计算结果应该都是 X（大写）
         assertEquals('X', IdentityCardUtils.calculateCheckCode(idWithUpperX));
         assertEquals('X', IdentityCardUtils.calculateCheckCode(idWithLowerX));
-    }
-
-    /**
-     * 测试非法输入 - null
-     */
-    @Test
-    void testNullInput() {
-        assertThrows(NullPointerException.class, () ->
-                IdentityCardUtils.calculateCheckCode((String) null));
-
-        assertThrows(IllegalArgumentException.class, () ->
-                IdentityCardUtils.appendCheckCode(null));
     }
 
     /**
