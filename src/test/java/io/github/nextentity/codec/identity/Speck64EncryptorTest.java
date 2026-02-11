@@ -12,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * 测试 SPECK64/128 分组密码加密器的功能
  */
 public class Speck64EncryptorTest {
-    
+
     private static final Logger logger = LoggerFactory.getLogger(Speck64EncryptorTest.class);
 
     private Speck64Encryptor encryptor;
@@ -28,27 +28,27 @@ public class Speck64EncryptorTest {
      */
     @Test
     void testByteArrayConstructor() {
-        // 测试正确的16字节密钥
+        // 测试正确的16字节密钥（小端字节序）
         byte[] keyBytes = {
-            0x01, 0x23, 0x45, 0x67,  // 第一个32位整数
-            (byte) 0x89, (byte) 0xAB, (byte) 0xCD, (byte) 0xEF,  // 第二个32位整数
-            (byte) 0xFE, (byte) 0xDC, (byte) 0xBA, (byte) 0x98,  // 第三个32位整数
-            0x76, 0x54, 0x32, 0x10   // 第四个32位整数
+                0x67, 0x45, 0x23, 0x01,  // 0x01234567 的小端字节序
+                (byte) 0xEF, (byte) 0xCD, (byte) 0xAB, (byte) 0x89,  // 0x89ABCDEF 的小端字节序
+                (byte) 0x98, (byte) 0xBA, (byte) 0xDC, (byte) 0xFE,  // 0xFEDCBA98 的小端字节序
+                0x10, 0x32, 0x54, 0x76   // 0x76543210 的小端字节序
         };
-        
+
         assertDoesNotThrow(() -> new Speck64Encryptor(keyBytes));
-        
+
         // 验证转换后的整数数组是否正确
         Speck64Encryptor byteEncryptor = new Speck64Encryptor(keyBytes);
         Speck64Encryptor intEncryptor = new Speck64Encryptor(TEST_KEY);
-        
+
         long testData = 0x123456789ABCDEF0L;
         long result1 = byteEncryptor.encrypt(testData);
         long result2 = intEncryptor.encrypt(testData);
-        
+
         assertEquals(result1, result2, "字节数组和整数数组构造的加密器应该产生相同结果");
     }
-    
+
     /**
      * 测试字节数组构造函数的参数验证
      */
@@ -57,11 +57,11 @@ public class Speck64EncryptorTest {
         // 测试长度不足的字节数组
         byte[] shortKey = {0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08};
         assertThrows(IllegalArgumentException.class, () -> new Speck64Encryptor(shortKey));
-        
+
         // 测试长度过长的字节数组
         byte[] longKey = new byte[20];
         assertThrows(IllegalArgumentException.class, () -> new Speck64Encryptor(longKey));
-        
+
         // 测试null字节数组
         assertThrows(NullPointerException.class, () -> new Speck64Encryptor((byte[]) null));
     }
@@ -73,11 +73,11 @@ public class Speck64EncryptorTest {
     void testConstructorValidation() {
         // 测试正确长度的密钥
         assertDoesNotThrow(() -> new Speck64Encryptor(TEST_KEY));
-        
+
         // 测试错误长度的密钥
         int[] shortKey = {0x01234567, 0x89ABCDEF};
         assertThrows(IllegalArgumentException.class, () -> new Speck64Encryptor(shortKey));
-        
+
         int[] longKey = {0x01234567, 0x89ABCDEF, 0xFEDCBA98, 0x76543210, 0x11111111};
         assertThrows(IllegalArgumentException.class, () -> new Speck64Encryptor(longKey));
     }
@@ -268,7 +268,7 @@ public class Speck64EncryptorTest {
 
         // 加密结果不应该显示出明显的模式
         assertNotEquals(data, encrypted, "加密结果不应该等于原始数据");
-        
+
         // 检查加密结果是否包含各种bit模式
         assertTrue(encrypted != 0, "加密结果不应该全为0");
         assertTrue(encrypted != -1, "加密结果不应该全为1");

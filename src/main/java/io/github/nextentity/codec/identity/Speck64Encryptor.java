@@ -1,6 +1,7 @@
 package io.github.nextentity.codec.identity;
 
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 
 /**
  * SPECK64分组密码加密器实现
@@ -249,6 +250,8 @@ public class Speck64Encryptor implements Encryptor {
 
     /**
      * 将字节数组转换为整数数组
+     * <p>
+     * SPECK算法使用小端字节序（Little Endian）进行字节到整数的转换
      *
      * @param key 16字节密钥字节数组
      * @return 包含4个32位整数的数组
@@ -260,7 +263,7 @@ public class Speck64Encryptor implements Encryptor {
         }
 
         int[] intKey = new int[4];
-        var buffer = ByteBuffer.wrap(key);
+        var buffer = ByteBuffer.wrap(key).order(ByteOrder.LITTLE_ENDIAN);
         for (int i = 0; i < 4; i++) {
             intKey[i] = buffer.getInt();
         }
