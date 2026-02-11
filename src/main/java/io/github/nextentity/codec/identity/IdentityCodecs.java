@@ -13,21 +13,24 @@ import org.jspecify.annotations.NonNull;
  *
  * <pre>
  * {@code
+ * // 创建简单身份编码器（无加密）
+ * IdentityCodec simpleCodec = IdentityCodecs.simple();
+ *
  * // 创建SPECK64加密的身份编码器
- * IdentityCodec codec = IdentityCodecs.speck64Encrypt(new int[]{1, 2, 3, 4});
+ * IdentityCodec encryptedCodec = IdentityCodecs.speck64Encrypt(new int[]{1, 2, 3, 4});
  *
  * // 编码身份证号码
- * long encoded = encryptedCodec.encode("110101199001011234");
+ * long encoded = simpleCodec.encode("110101199001011234");
  *
  * // 解码身份证号码
- * String decoded = encryptedCodec.decode(encoded);
+ * String decoded = simpleCodec.decode(encoded);
  * }
  * </pre>
  * <p>
  * <strong>支持的编码器类型：</strong>
  * <pre>
- * - SPECK64加密编码器：提供高强度加密保护
  * - 简单编码器：基础的无加密编码功能
+ * - SPECK64加密编码器：提供高强度加密保护
  * </pre>
  *
  * @author nextentity
@@ -48,7 +51,7 @@ public class IdentityCodecs {
      * @see #speck64Encrypt(int[])
      */
     public static @NonNull IdentityCodec speck64Encrypt(byte @NonNull [] key) {
-        IdentityCodec codec = new SimpleIdentityCodec();
+        IdentityCodec codec = simple();
         Encryptor encryptor = new Speck64Encryptor(key);
         return new EncryptedIdentityCodec(codec, encryptor);
     }
@@ -78,9 +81,19 @@ public class IdentityCodecs {
      * @see Speck64Encryptor
      */
     public static @NonNull IdentityCodec speck64Encrypt(int @NonNull [] key) {
-        IdentityCodec codec = new SimpleIdentityCodec();
+        IdentityCodec codec = simple();
         Encryptor encryptor = new Speck64Encryptor(key);
         return new EncryptedIdentityCodec(codec, encryptor);
+    }
+
+    /**
+     * 创建简单身份编码器（无加密）
+     *
+     * @return SimpleIdentityCodec实例，提供基础的身份证编码功能
+     * @see SimpleIdentityCodec
+     */
+    public static @NonNull IdentityCodec simple() {
+        return SimpleIdentityCodec.of();
     }
 
     /**

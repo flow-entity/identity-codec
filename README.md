@@ -59,8 +59,8 @@ IdentityCodecs          - 工厂类
 
 ```java
 void main() {
-    // 创建基础编码器
-    IdentityCodec codec = new SimpleIdentityCodec();
+    // 创建基础编码器（推荐使用工厂方法）
+    IdentityCodec codec = IdentityCodecs.simple();
 
     // 编码身份证
     String idCard = "110105194912310021";
@@ -141,11 +141,11 @@ SPECK是一族轻量级分组密码算法。
 提供创建各种编码器实例的静态工厂方法。
 
 ```java
+// 创建简单编码器（无加密）
+IdentityCodec simpleCodec = IdentityCodecs.simple();
+
 // 创建SPECK64加密编码器
 IdentityCodec encryptedCodec = IdentityCodecs.speck64Encrypt(new int[]{1, 2, 3, 4});
-
-// 创建基础编码器
-IdentityCodec simpleCodec = new SimpleIdentityCodec();
 ```
 
 #### SimpleIdentityCodec
@@ -168,7 +168,7 @@ void main() {
     }
 
     try {
-        long encoded = codec.decode(invalidIdCard);
+        String decoded = codec.decode(invalidValue);
     } catch (InvalidEncodingException e) {
         // 处理编码错误
     }

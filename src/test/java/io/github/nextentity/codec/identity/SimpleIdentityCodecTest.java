@@ -15,11 +15,11 @@ public class SimpleIdentityCodecTest {
     
     private static final Logger logger = LoggerFactory.getLogger(SimpleIdentityCodecTest.class);
 
-    private SimpleIdentityCodec codec;
+    private IdentityCodec codec;
 
     @BeforeEach
     void setUp() {
-        codec = new SimpleIdentityCodec();
+        codec = IdentityCodecs.simple();
     }
 
     /**

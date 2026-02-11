@@ -29,6 +29,12 @@ public class SimpleIdentityCodec implements IdentityCodec {
      */
     private static final int VERSION = 1;
 
+    public static final IdentityCodec INSTANCE = new SimpleIdentityCodec();
+
+    public static IdentityCodec of() {
+        return INSTANCE;
+    }
+
     /**
      * 将 18 位身份证号码编码为 long 类型
      * <pre>
