@@ -36,11 +36,11 @@ public interface Encryptor {
      * <p>
      * 解密操作应该是加密操作的精确逆过程。
      *
-     * @param encrypted 64位密文数据
+     * @param ciphertext 64位密文数据
      * @return 64位解密后的明文数据
      * @throws RuntimeException 当解密过程中发生错误时抛出
      * @see #encrypt(long)
      */
-    long decrypt(long encrypted);
+    long decrypt(long ciphertext);
 
 }
