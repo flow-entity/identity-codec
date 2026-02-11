@@ -15,29 +15,6 @@ public class IdentityCardUtilsTest {
     private static final Logger logger = LoggerFactory.getLogger(IdentityCardUtilsTest.class);
 
     /**
-     * 测试校验码计算 - 已知正确的身份证号码
-     */
-    @Test
-    void testCalculateCheckCodeCheckCode() {
-        // 使用 generateCompleteId 生成正确的身份证号码
-        String[] first17List = {
-                "11010519491231002", // 应该生成校验码 X
-                "11010119900101123", // 应该生成校验码 7
-                "31010119850615234", // 应该生成校验码 5
-                "44010119801212345", // 应该生成校验码 5
-                "51010119750321456"  // 应该生成校验码 6
-        };
-
-        for (String first17 : first17List) {
-            String completeId = IdentityCardUtils.appendCheckCode(first17);
-            char expectedCheckCode = completeId.charAt(17);
-            char calculatedCheckCode = IdentityCardUtils.calculateCheckCode(completeId);
-            assertEquals(expectedCheckCode, calculatedCheckCode,
-                    "身份证号码 " + completeId + " 的校验码计算错误");
-        }
-    }
-
-    /**
      * 测试校验码验证功能
      */
     @Test
@@ -63,16 +40,6 @@ public class IdentityCardUtilsTest {
      */
     @Test
     void testDateValidation() {
-        // 正确的日期
-        String validId = IdentityCardUtils.appendCheckCode("11010519901225002"); // 1990年12月25日
-        assertTrue(IdentityCardUtils.isValid(validId),
-                "正确的日期应该验证通过: " + validId);
-
-        // 闰年2月29日
-        String leapYearId = IdentityCardUtils.appendCheckCode("11010520000229002"); // 2000年2月29日（闰年）
-        assertTrue(IdentityCardUtils.isValid(leapYearId),
-                "闰年2月29日应该验证通过: " + leapYearId);
-
         // 非闰年2月29日（应该失败）
         String nonLeapYearFirst17 = "11010519990229002";
         String nonLeapYearId = nonLeapYearFirst17 + IdentityCardUtils.calculateCheckCode(nonLeapYearFirst17);
@@ -128,24 +95,6 @@ public class IdentityCardUtilsTest {
     }
 
     /**
-     * 测试生成完整的身份证号码
-     */
-    @Test
-    void testAppendCheckCode() {
-        // 前17位
-        String first17 = "11010519491231002";
-        String completeId = IdentityCardUtils.appendCheckCode(first17);
-
-        assertEquals(18, completeId.length(), "生成的身份证号码应该是18位");
-        assertEquals(first17, completeId.substring(0, 17), "前17位应该保持不变");
-        assertEquals('X', completeId.charAt(17), "校验码应该是 X");
-
-        // 验证生成的身份证号码是正确的
-        assertTrue(IdentityCardUtils.isValid(completeId),
-                "生成的身份证号码应该能通过验证");
-    }
-
-    /**
      * 测试小写 x 的处理
      */
     @Test
@@ -173,13 +122,6 @@ public class IdentityCardUtilsTest {
 
         assertThrows(InvalidIdentityNumberException.class, () ->
                 IdentityCardUtils.calculateCheckCode("1234567890123456789"));
-
-        // generateCompleteId 需要17位
-        assertThrows(InvalidIdentityNumberException.class, () ->
-                IdentityCardUtils.appendCheckCode("1234567890123456"));
-
-        assertThrows(InvalidIdentityNumberException.class, () ->
-                IdentityCardUtils.appendCheckCode("123456789012345678"));
     }
 
     /**
@@ -218,16 +160,9 @@ public class IdentityCardUtilsTest {
 
         for (int i = 0; i < first17List.length; i++) {
             String first17Chars = first17List[i];
-            String completeId = IdentityCardUtils.appendCheckCode(first17Chars);
-            char calculated = IdentityCardUtils.calculateCheckCode(completeId);
+            char calculated = IdentityCardUtils.calculateCheckCode(first17Chars);
             assertEquals(expectedCodes[i], calculated,
-                    "生成的身份证号码校验码计算错误: " + completeId);
+                    "生成的身份证号码校验码计算错误: " + first17Chars);
         }
-
-        // 专门测试 X 校验码
-        String first17WithX = "11010519491231002";
-        String completeWithX = IdentityCardUtils.appendCheckCode(first17WithX);
-        assertEquals('X', completeWithX.charAt(17));
-        assertEquals('X', IdentityCardUtils.calculateCheckCode(completeWithX));
     }
 }

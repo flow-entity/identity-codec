@@ -26,10 +26,10 @@ public interface Encryptor {
      *
      * @param plaintext 64位明文数据
      * @return 64位加密后的密文数据
-     * @throws RuntimeException 当加密过程中发生错误时抛出
+     * @throws EncryptorException 当加密过程中发生错误时抛出
      * @see #decrypt(long)
      */
-    long encrypt(long plaintext);
+    long encrypt(long plaintext) throws EncryptorException;
 
     /**
      * 解密64位密文数据
@@ -38,9 +38,9 @@ public interface Encryptor {
      *
      * @param ciphertext 64位密文数据
      * @return 64位解密后的明文数据
-     * @throws RuntimeException 当解密过程中发生错误时抛出
+     * @throws EncryptorException 当解密过程中发生错误时抛出
      * @see #encrypt(long)
      */
-    long decrypt(long ciphertext);
+    long decrypt(long ciphertext) throws EncryptorException;
 
 }

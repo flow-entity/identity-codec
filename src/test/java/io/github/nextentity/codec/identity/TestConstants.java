@@ -201,20 +201,20 @@ public final class TestConstants {
     /**
      * InvalidIdentityNumberException的错误码数组
      */
-    public static final InvalidIdentityNumberException.ErrorCode[] ID_NUMBER_ERROR_CODES = {
-            InvalidIdentityNumberException.ErrorCode.INVALID_LENGTH,
-            InvalidIdentityNumberException.ErrorCode.INVALID_CHECK_CODE,
-            InvalidIdentityNumberException.ErrorCode.INVALID_CHARACTER,
-            InvalidIdentityNumberException.ErrorCode.INVALID_DATE
+    public static final ErrorCode[] ID_NUMBER_ERROR_CODES = {
+            ErrorCode.INVALID_ID_LENGTH,
+            ErrorCode.INVALID_CHECK_CODE,
+            ErrorCode.INVALID_CHARACTER,
+            ErrorCode.INVALID_DATE
     };
-    
+
     /**
      * InvalidEncodingException的错误码数组
      */
-    public static final InvalidEncodingException.ErrorCode[] ENCODING_ERROR_CODES = {
-            InvalidEncodingException.ErrorCode.UNSUPPORTED_VERSION,
-            InvalidEncodingException.ErrorCode.RESERVED_BITS_NOT_ZERO,
-            InvalidEncodingException.ErrorCode.INVALID_BIT_FIELD
+    public static final ErrorCode[] ENCODING_ERROR_CODES = {
+            ErrorCode.UNSUPPORTED_VERSION,
+            ErrorCode.RESERVED_BITS_NOT_ZERO,
+            ErrorCode.INVALID_BIT_FIELD
     };
     
     // ==================== 性能测试常量 ====================

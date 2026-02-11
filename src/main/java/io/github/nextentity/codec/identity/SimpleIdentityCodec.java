@@ -87,7 +87,7 @@ public class SimpleIdentityCodec implements IdentityCodec {
      *
      * @param encoded 编码后的 long 值
      * @return 18 位身份证号码字符串
-     * @throws InvalidEncodingException 当版本不支持或数据格式错误时抛出
+     * @throws IdentityCodecException 当版本不支持或数据格式错误时抛出
      * @see #encode(String)
      */
     @Override
@@ -97,8 +97,8 @@ public class SimpleIdentityCodec implements IdentityCodec {
 
         // 2. 版本路由检查（当前仅支持版本1）
         if (version != 1) {
-            throw new InvalidEncodingException(
-                    InvalidEncodingException.ErrorCode.UNSUPPORTED_VERSION,
+            throw new IdentityCodecException(
+                    ErrorCode.UNSUPPORTED_VERSION,
                     String.valueOf(version)
             );
         }
@@ -106,8 +106,8 @@ public class SimpleIdentityCodec implements IdentityCodec {
         // 3. 校验预留位是否为0 ([63-56] 位)
         long reservedBits = (encoded >>> 56) & 0xFFL;
         if (reservedBits != 0) {
-            throw new InvalidEncodingException(
-                    InvalidEncodingException.ErrorCode.RESERVED_BITS_NOT_ZERO,
+            throw new IdentityCodecException(
+                    ErrorCode.RESERVED_BITS_NOT_ZERO,
                     String.valueOf(reservedBits)
             );
         }
@@ -123,8 +123,8 @@ public class SimpleIdentityCodec implements IdentityCodec {
         // 6. 校验年份是否为四位数（年份应在 0000-9999 范围内）
         int year = birth.getYear();
         if (year < 0 || year > 9999) {
-            throw new InvalidEncodingException(
-                    InvalidEncodingException.ErrorCode.INVALID_BIT_FIELD,
+            throw new IdentityCodecException(
+                    ErrorCode.INVALID_BIT_FIELD,
                     "Birth year out of range: " + year
             );
         }

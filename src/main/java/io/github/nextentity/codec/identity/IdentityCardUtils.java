@@ -58,7 +58,7 @@ public class IdentityCardUtils {
     public static char calculateCheckCode(byte[] chars) {
         if (chars.length < 17 || chars.length > 18) {
             throw new InvalidIdentityNumberException(
-                    InvalidIdentityNumberException.ErrorCode.INVALID_LENGTH,
+                    ErrorCode.INVALID_ID_LENGTH,
                     "Input length must be 17 or 18"
             );
         }
@@ -68,7 +68,7 @@ public class IdentityCardUtils {
             int digit = chars[i] - '0';
             if (digit < 0 || digit > 9) {
                 throw new InvalidIdentityNumberException(
-                        InvalidIdentityNumberException.ErrorCode.INVALID_CHARACTER,
+                        ErrorCode.INVALID_CHARACTER,
                         "Non-numeric character at position " + i + ": " + chars[i]);
             }
             sum += digit * WEIGHTS[i];
@@ -113,7 +113,7 @@ public class IdentityCardUtils {
     public static void validate(byte[] bytes) {
         if (bytes.length != 18) {
             throw new InvalidIdentityNumberException(
-                    InvalidIdentityNumberException.ErrorCode.INVALID_LENGTH,
+                    ErrorCode.INVALID_ID_LENGTH,
                     "ID number must be exactly 18 digits"
             );
         }
@@ -123,7 +123,7 @@ public class IdentityCardUtils {
 
         if (expected != actual) {
             throw new InvalidIdentityNumberException(
-                    InvalidIdentityNumberException.ErrorCode.INVALID_CHECK_CODE,
+                    ErrorCode.INVALID_CHECK_CODE,
                     String.format("Expected '%c', actual '%c'", expected, actual)
             );
         }
@@ -154,7 +154,7 @@ public class IdentityCardUtils {
 
         } catch (DateTimeException e) {
             throw new InvalidIdentityNumberException(
-                    InvalidIdentityNumberException.ErrorCode.INVALID_DATE,
+                    ErrorCode.INVALID_DATE,
                     "Invalid birth date value",
                     e
             );
@@ -175,26 +175,5 @@ public class IdentityCardUtils {
             result = result * 10 + (str[i] - '0');
         }
         return result;
-    }
-
-    /**
-     * 根据前17位数字生成完整的18位身份证号码（包含计算出的校验码）
-     *
-     * @param first17Chars 身份证号码前17位数字
-     * @return 完整的18位身份证号码
-     * @throws InvalidIdentityNumberException 当输入格式不正确时抛出
-     */
-    public static @NonNull String appendCheckCode(@NonNull String first17Chars) {
-        if (first17Chars.length() != 17) {
-            throw new InvalidIdentityNumberException(
-                    InvalidIdentityNumberException.ErrorCode.INVALID_LENGTH,
-                    "Input must be exactly 17 digits"
-            );
-        }
-
-        // 临时拼接一个占位符作为第18位，用于调用 calculate 方法
-        char checkCode = calculateCheckCode(first17Chars);
-
-        return first17Chars + checkCode;
     }
 }

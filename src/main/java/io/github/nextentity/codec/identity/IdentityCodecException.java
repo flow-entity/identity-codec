@@ -3,61 +3,17 @@ package io.github.nextentity.codec.identity;
 import java.io.Serial;
 
 /**
- * 无效编码异常
+ * 身份编码异常
  * <p>
- * 当身份证解码过程中出现错误时抛出此异常。
+ * 当身份证编码或解码过程中出现错误时抛出此异常。
  * 包括版本不支持、数据格式错误等情况。
  *
  * @version 1.0
  */
-public class InvalidEncodingException extends IllegalArgumentException {
+public class IdentityCodecException extends RuntimeException {
 
     @Serial
     private static final long serialVersionUID = -6273621541303090094L;
-
-    /**
-     * 错误码枚举
-     */
-    public enum ErrorCode {
-        /**
-         * 不支持的压缩版本
-         */
-        UNSUPPORTED_VERSION("IEC-001", "Unsupported compression version"),
-        /**
-         * 预留位必须为零
-         */
-        RESERVED_BITS_NOT_ZERO("IEC-002", "Reserved bits must be zero"),
-        /**
-         * 无效的位域提取
-         */
-        INVALID_BIT_FIELD("IEC-003", "Invalid bit field extraction");
-
-        private final String code;
-        private final String description;
-
-        ErrorCode(String code, String description) {
-            this.code = code;
-            this.description = description;
-        }
-
-        /**
-         * 获取错误码
-         *
-         * @return 错误码
-         */
-        public String getCode() {
-            return code;
-        }
-
-        /**
-         * 获取错误描述
-         *
-         * @return 错误描述
-         */
-        public String getDescription() {
-            return description;
-        }
-    }
 
     /**
      * 错误码
@@ -69,7 +25,7 @@ public class InvalidEncodingException extends IllegalArgumentException {
      *
      * @param message 异常信息
      */
-    public InvalidEncodingException(String message) {
+    public IdentityCodecException(String message) {
         super(message);
         this.errorCode = null;
     }
@@ -80,7 +36,7 @@ public class InvalidEncodingException extends IllegalArgumentException {
      * @param errorCode 错误码枚举
      * @param detail    详细错误信息
      */
-    public InvalidEncodingException(ErrorCode errorCode, String detail) {
+    public IdentityCodecException(ErrorCode errorCode, String detail) {
         super(String.format("[%s] %s: %s", errorCode.getCode(), errorCode.getDescription(), detail));
         this.errorCode = errorCode;
     }
@@ -92,9 +48,20 @@ public class InvalidEncodingException extends IllegalArgumentException {
      * @param detail    详细错误信息
      * @param cause     异常原因
      */
-    public InvalidEncodingException(ErrorCode errorCode, String detail, Throwable cause) {
+    public IdentityCodecException(ErrorCode errorCode, String detail, Throwable cause) {
         super(String.format("[%s] %s: %s", errorCode.getCode(), errorCode.getDescription(), detail), cause);
         this.errorCode = errorCode;
+    }
+
+    /**
+     * 构造函数（带原因）
+     *
+     * @param message 异常信息
+     * @param cause   异常原因
+     */
+    public IdentityCodecException(String message, Throwable cause) {
+        super(message, cause);
+        this.errorCode = null;
     }
 
     /**

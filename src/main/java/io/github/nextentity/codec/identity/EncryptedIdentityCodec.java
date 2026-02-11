@@ -1,6 +1,7 @@
 package io.github.nextentity.codec.identity;
 
 import org.jspecify.annotations.NonNull;
+
 import java.util.Objects;
 
 /**
@@ -84,13 +85,18 @@ public class EncryptedIdentityCodec implements IdentityCodec {
      * @param identityNumber 18位身份证号码字符串
      * @return 加密编码后的 long 值
      * @throws InvalidIdentityNumberException 当身份证格式不正确时抛出
+     * @throws IdentityCodecException         当加密过程中发生错误时抛出
      * @see #decode(long)
      * @see SimpleIdentityCodec#encode(String)
      */
     @Override
     public long encode(@NonNull String identityNumber) {
         long encodedIdentity = codec.encode(identityNumber);
-        return encryptor.encrypt(encodedIdentity);
+        try {
+            return encryptor.encrypt(encodedIdentity);
+        } catch (EncryptorException e) {
+            throw new IdentityCodecException(ErrorCode.INVALID_BIT_FIELD, "Encryption failed", e);
+        }
     }
 
     /**
@@ -103,13 +109,18 @@ public class EncryptedIdentityCodec implements IdentityCodec {
      *
      * @param encryptedValue 加密编码后的 long 值
      * @return 18位身份证号码字符串
-     * @throws InvalidEncodingException 当解密失败或数据格式错误时抛出
+     * @throws IdentityCodecException 当解密失败或数据格式错误时抛出
      * @see #encode(String)
      * @see SimpleIdentityCodec#decode(long)
      */
     @Override
     public @NonNull String decode(long encryptedValue) {
-        long decryptedIdentity = encryptor.decrypt(encryptedValue);
+        long decryptedIdentity;
+        try {
+            decryptedIdentity = encryptor.decrypt(encryptedValue);
+        } catch (EncryptorException e) {
+            throw new IdentityCodecException(ErrorCode.INVALID_BIT_FIELD, "Decryption failed", e);
+        }
         return codec.decode(decryptedIdentity);
     }
 }

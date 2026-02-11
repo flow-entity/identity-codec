@@ -368,7 +368,7 @@ public class SimpleIdentityCodecTest {
             // 只设置版本号位
 
             // 验证应该抛出 InvalidEncodingException 异常
-            Exception exception = assertThrows(InvalidEncodingException.class, () -> codec.decode(version), "不支持的版本号应该抛出异常");
+            Exception exception = assertThrows(IdentityCodecException.class, () -> codec.decode(version), "不支持的版本号应该抛出异常");
 
             // 验证异常消息包含正确的版本信息
             String expectedMessage = "Unsupported compression version: " + version;
@@ -398,7 +398,7 @@ public class SimpleIdentityCodecTest {
             if (version == 1) continue; // 跳过支持的版本
 
             long testData = version;
-            assertThrows(InvalidEncodingException.class, () ->
+            assertThrows(IdentityCodecException.class, () ->
                     codec.decode(testData), "版本 " + version + " 应该抛出异常");
         }
         logger.info("  ✓ 所有非1版本都正确抛出异常");
