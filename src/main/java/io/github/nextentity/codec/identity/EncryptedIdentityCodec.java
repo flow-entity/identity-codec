@@ -83,7 +83,7 @@ public class EncryptedIdentityCodec implements IdentityCodec {
      *
      * @param identityNumber 18位身份证号码字符串
      * @return 加密编码后的 long 值
-     * @throws IllegalArgumentException 当身份证格式不正确时抛出
+     * @throws InvalidIdentityNumberException 当身份证格式不正确时抛出
      * @see #decode(long)
      * @see SimpleIdentityCodec#encode(String)
      */
@@ -103,7 +103,7 @@ public class EncryptedIdentityCodec implements IdentityCodec {
      *
      * @param encryptedValue 加密编码后的 long 值
      * @return 18位身份证号码字符串
-     * @throws IllegalArgumentException 当解密失败或数据格式错误时抛出
+     * @throws InvalidEncodingException 当解密失败或数据格式错误时抛出
      * @see #encode(String)
      * @see SimpleIdentityCodec#decode(long)
      */
