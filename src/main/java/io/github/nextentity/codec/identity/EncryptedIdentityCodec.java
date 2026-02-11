@@ -95,7 +95,7 @@ public class EncryptedIdentityCodec implements IdentityCodec {
         try {
             return encryptor.encrypt(encodedIdentity);
         } catch (EncryptorException e) {
-            throw new IdentityCodecException(ErrorCode.INVALID_BIT_FIELD, "Encryption failed", e);
+            throw new IdentityCodecException(ErrorCode.ENCRYPTION_FAILED, "加密失败", e);
         }
     }
 
@@ -119,7 +119,7 @@ public class EncryptedIdentityCodec implements IdentityCodec {
         try {
             decryptedIdentity = encryptor.decrypt(encryptedValue);
         } catch (EncryptorException e) {
-            throw new IdentityCodecException(ErrorCode.INVALID_BIT_FIELD, "Decryption failed", e);
+            throw new IdentityCodecException(ErrorCode.DECRYPTION_FAILED, "解密失败", e);
         }
         return codec.decode(decryptedIdentity);
     }

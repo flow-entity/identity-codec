@@ -12,7 +12,6 @@ import static org.junit.jupiter.api.Assertions.*;
  * InvalidIdentityNumberException 测试类
  * 测试无效身份证号码异常的各种构造函数和功能
  */
-@SuppressWarnings("SpellCheckingInspection")
 public class InvalidIdentityNumberExceptionTest {
 
     private static final Logger logger = LoggerFactory.getLogger(InvalidIdentityNumberExceptionTest.class);
@@ -99,6 +98,8 @@ public class InvalidIdentityNumberExceptionTest {
             assertFalse(errorCode.getCode().isEmpty(), "错误码不应该为空");
             assertFalse(errorCode.getDescription().isEmpty(), "错误描述不应该为空");
 
+");
+
             logger.info("错误码: {} - {}", errorCode.getCode(), errorCode.getDescription());
         }
 
@@ -113,7 +114,7 @@ public class InvalidIdentityNumberExceptionTest {
         ErrorCode errorCode = ErrorCode.INVALID_ID_LENGTH;
 
         assertEquals("IIN-001", errorCode.getCode(), "无效长度错误码应该正确为IIN-001");
-        assertEquals("Invalid ID number length", errorCode.getDescription(),
+        assertEquals("无效的身份证号码长度", errorCode.getDescription(),
                 "无效长度错误描述应该正确");
 
         String detail = "身份证号码长度为16，期望18位";
@@ -121,7 +122,7 @@ public class InvalidIdentityNumberExceptionTest {
 
         assertTrue(exception.getMessage().contains("IIN-001"),
                 "异常消息应该包含错误码");
-        assertTrue(exception.getMessage().contains("Invalid ID number length"),
+        assertTrue(exception.getMessage().contains("无效的身份证号码长度"),
                 "异常消息应该包含错误描述");
         assertTrue(exception.getMessage().contains(detail),
                 "异常消息应该包含详细信息");
@@ -137,7 +138,7 @@ public class InvalidIdentityNumberExceptionTest {
         ErrorCode errorCode = ErrorCode.INVALID_CHECK_CODE;
 
         assertEquals("IIN-002", errorCode.getCode(), "无效校验码错误码应该正确为IIN-002");
-        assertEquals("Invalid check code", errorCode.getDescription(),
+        assertEquals("无效的校验码", errorCode.getDescription(),
                 "无效校验码错误描述应该正确");
 
         String detail = "校验码计算结果为5，但提供的校验码是6";
@@ -145,7 +146,7 @@ public class InvalidIdentityNumberExceptionTest {
 
         assertTrue(exception.getMessage().contains("IIN-002"),
                 "异常消息应该包含错误码");
-        assertTrue(exception.getMessage().contains("Invalid check code"),
+        assertTrue(exception.getMessage().contains("无效的校验码"),
                 "异常消息应该包含错误描述");
 
         logger.info("无效校验码错误码测试通过");
@@ -159,7 +160,7 @@ public class InvalidIdentityNumberExceptionTest {
         ErrorCode errorCode = ErrorCode.INVALID_CHARACTER;
 
         assertEquals("IIN-003", errorCode.getCode(), "无效字符错误码应该正确为IIN-003");
-        assertEquals("Invalid character in ID number", errorCode.getDescription(),
+        assertEquals("身份证号码中包含无效字符", errorCode.getDescription(),
                 "无效字符错误描述应该正确");
 
         String detail = "身份证号码中包含非法字符: 'A'";
@@ -167,7 +168,7 @@ public class InvalidIdentityNumberExceptionTest {
 
         assertTrue(exception.getMessage().contains("IIN-003"),
                 "异常消息应该包含错误码");
-        assertTrue(exception.getMessage().contains("Invalid character in ID number"),
+        assertTrue(exception.getMessage().contains("身份证号码中包含无效字符"),
                 "异常消息应该包含错误描述");
 
         logger.info("无效字符错误码测试通过");
@@ -181,7 +182,7 @@ public class InvalidIdentityNumberExceptionTest {
         ErrorCode errorCode = ErrorCode.INVALID_DATE;
 
         assertEquals("IIN-004", errorCode.getCode(), "无效日期错误码应该正确为IIN-004");
-        assertEquals("Invalid birth date", errorCode.getDescription(),
+        assertEquals("无效的出生日期", errorCode.getDescription(),
                 "无效日期错误描述应该正确");
 
         String detail = "出生日期超出有效范围";
@@ -189,7 +190,7 @@ public class InvalidIdentityNumberExceptionTest {
 
         assertTrue(exception.getMessage().contains("IIN-004"),
                 "异常消息应该包含错误码");
-        assertTrue(exception.getMessage().contains("Invalid birth date"),
+        assertTrue(exception.getMessage().contains("无效的出生日期"),
                 "异常消息应该包含错误描述");
 
         logger.info("无效日期错误码测试通过");
@@ -227,9 +228,12 @@ public class InvalidIdentityNumberExceptionTest {
         InvalidIdentityNumberException exception = new InvalidIdentityNumberException(message);
 
         // 验证继承关系
-        assertInstanceOf(IdentityCodecException.class, exception, "InvalidIdentityNumberException应该继承IdentityCodecException");
-        assertInstanceOf(RuntimeException.class, exception, "InvalidIdentityNumberException应该继承RuntimeException");
-        assertInstanceOf(Exception.class, exception, "InvalidIdentityNumberException应该继承Exception");
+        assertTrue(exception instanceof IdentityCodecException,
+                "InvalidIdentityNumberException应该继承IdentityCodecException");
+        assertTrue(exception instanceof RuntimeException,
+                "InvalidIdentityNumberException应该继承RuntimeException");
+        assertTrue(exception instanceof Exception,
+                "InvalidIdentityNumberException应该继承Exception");
 
         logger.info("异常继承关系测试通过");
     }
@@ -292,8 +296,11 @@ public class InvalidIdentityNumberExceptionTest {
         InvalidIdentityNumberException exception3 = new InvalidIdentityNumberException(message2);
 
         // 异常的equals通常基于引用相等性，这里我们测试基本行为
+        assertEquals(exception1, exception1, "异常应该等于自己");
         assertNotEquals(exception1, exception2, "不同实例的异常通常不相等");
         assertNotEquals(exception1, exception3, "不同消息的异常不应该相等");
+        assertNotEquals(exception1, null, "异常不应该等于null");
+        assertNotEquals(exception1, "字符串", "异常不应该等于不同类型的对象");
 
         logger.info("异常equals和hashCode测试通过");
     }
@@ -306,9 +313,11 @@ public class InvalidIdentityNumberExceptionTest {
         // 模拟无效长度场景
         try {
             String idNumber = "1234567890123456"; // 16位
-            throw new InvalidIdentityNumberException(
-                    ErrorCode.INVALID_ID_LENGTH,
-                    "身份证号码长度为 " + idNumber.length() + "，期望18位");
+            if (idNumber.length() != 18) {
+                throw new InvalidIdentityNumberException(
+                        ErrorCode.INVALID_ID_LENGTH,
+                        "身份证号码长度为 " + idNumber.length() + "，期望18位");
+            }
         } catch (InvalidIdentityNumberException e) {
             assertTrue(e.getMessage().contains("IIN-001"));
             assertTrue(e.getMessage().contains("身份证号码长度为 16"));
@@ -319,9 +328,11 @@ public class InvalidIdentityNumberExceptionTest {
         try {
             String providedCheckCode = "1";
             String expectedCheckCode = "X";
-            throw new InvalidIdentityNumberException(
-                    ErrorCode.INVALID_CHECK_CODE,
-                    "Expected '" + expectedCheckCode + "', actual '" + providedCheckCode + "'");
+            if (!providedCheckCode.equals(expectedCheckCode)) {
+                throw new InvalidIdentityNumberException(
+                        ErrorCode.INVALID_CHECK_CODE,
+                        String.format("Expected '%s', actual '%s'", expectedCheckCode, providedCheckCode));
+            }
         } catch (InvalidIdentityNumberException e) {
             assertTrue(e.getMessage().contains("IIN-002"));
             assertTrue(e.getMessage().contains("Expected 'X', actual '1'"));
@@ -331,9 +342,11 @@ public class InvalidIdentityNumberExceptionTest {
         // 模拟无效日期场景
         try {
             int month = 13;
-            throw new InvalidIdentityNumberException(
-                    ErrorCode.INVALID_DATE,
-                    "Invalid month: " + month);
+            if (month < 1 || month > 12) {
+                throw new InvalidIdentityNumberException(
+                        ErrorCode.INVALID_DATE,
+                        "Invalid month: " + month);
+            }
         } catch (InvalidIdentityNumberException e) {
             assertTrue(e.getMessage().contains("IIN-004"));
             assertTrue(e.getMessage().contains("Invalid month: 13"));
@@ -398,9 +411,12 @@ public class InvalidIdentityNumberExceptionTest {
     void testBoundaryValueScenarios() {
         // 测试空字符串
         try {
-            throw new InvalidIdentityNumberException(
-                    ErrorCode.INVALID_ID_LENGTH,
-                    "身份证号码为空");
+            String emptyId = "";
+            if (emptyId.isEmpty()) {
+                throw new InvalidIdentityNumberException(
+                        ErrorCode.INVALID_ID_LENGTH,
+                        "身份证号码为空");
+            }
         } catch (InvalidIdentityNumberException e) {
             assertEquals(ErrorCode.INVALID_ID_LENGTH, e.getErrorCode());
         }

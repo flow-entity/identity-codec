@@ -86,10 +86,12 @@ public class IdentityCodecExceptionTest {
         ErrorCode[] encodingErrorCodes = {
                 ErrorCode.UNSUPPORTED_VERSION,
                 ErrorCode.RESERVED_BITS_NOT_ZERO,
-                ErrorCode.INVALID_BIT_FIELD
+                ErrorCode.INVALID_BIT_FIELD,
+                ErrorCode.ENCRYPTION_FAILED,
+                ErrorCode.DECRYPTION_FAILED
         };
 
-        assertEquals(4, encodingErrorCodes.length, "应该有4个编码错误码");
+        assertEquals(5, encodingErrorCodes.length, "应该有5个编码错误码");
 
         // 验证每个错误码的属性
         for (ErrorCode errorCode : encodingErrorCodes) {
@@ -112,7 +114,7 @@ public class IdentityCodecExceptionTest {
         ErrorCode errorCode = ErrorCode.UNSUPPORTED_VERSION;
 
         assertEquals("IDC-001", errorCode.getCode(), "不支持的版本错误码应该正确为IDC-001");
-        assertEquals("Unsupported compression version", errorCode.getDescription(),
+        assertEquals("不支持的编码版本", errorCode.getDescription(),
                 "不支持的版本错误描述应该正确");
 
         String detail = "检测到版本2";
@@ -120,12 +122,56 @@ public class IdentityCodecExceptionTest {
 
         assertTrue(exception.getMessage().contains("IDC-001"),
                 "异常消息应该包含错误码");
-        assertTrue(exception.getMessage().contains("Unsupported compression version"),
+        assertTrue(exception.getMessage().contains("不支持的编码版本"),
                 "异常消息应该包含错误描述");
         assertTrue(exception.getMessage().contains(detail),
                 "异常消息应该包含详细信息");
 
         logger.info("不支持的版本错误码测试通过");
+    }
+
+    /**
+     * 测试预留位不为零错误码
+     */
+    @Test
+    void testReservedBitsNotZeroErrorCode() {
+        ErrorCode errorCode = ErrorCode.RESERVED_BITS_NOT_ZERO;
+
+        assertEquals("IDC-002", errorCode.getCode(), "预留位不为零错误码应该正确为IDC-002");
+        assertEquals("预留位必须为零", errorCode.getDescription(),
+                "预留位不为零错误描述应该正确");
+
+        String detail = "预留位检测到非零值";
+        IdentityCodecException exception = new IdentityCodecException(errorCode, detail);
+
+        assertTrue(exception.getMessage().contains("IDC-002"),
+                "异常消息应该包含错误码");
+        assertTrue(exception.getMessage().contains("预留位必须为零"),
+                "异常消息应该包含错误描述");
+
+        logger.info("预留位不为零错误码测试通过");
+    }
+
+    /**
+     * 测试无效位域提取错误码
+     */
+    @Test
+    void testInvalidBitFieldErrorCode() {
+        ErrorCode errorCode = ErrorCode.INVALID_BIT_FIELD;
+
+        assertEquals("IDC-003", errorCode.getCode(), "无效位域提取错误码应该正确为IDC-003");
+        assertEquals("无效的位域提取", errorCode.getDescription(),
+                "无效位域提取错误描述应该正确");
+
+        String detail = "无法从编码值中提取有效的位域";
+        IdentityCodecException exception = new IdentityCodecException(errorCode, detail);
+
+        assertTrue(exception.getMessage().contains("IDC-003"),
+                "异常消息应该包含错误码");
+        assertTrue(exception.getMessage().contains("无效的位域提取"),
+                "异常消息应该包含错误描述");
+
+        logger.info("无效位域提取错误码测试通过");
     }
 
     /**
