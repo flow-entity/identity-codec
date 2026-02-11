@@ -31,7 +31,6 @@ public class IdentityCardUtils {
      * 私有构造方法，防止实例化
      */
     private IdentityCardUtils() {
-        // 工具类，禁止实例化
     }
 
     /**
@@ -55,14 +54,18 @@ public class IdentityCardUtils {
      */
     public static char calculateCheckCode(byte[] chars) {
         if (chars.length < 17 || chars.length > 18) {
-            throw new InvalidIdentityNumberException(InvalidIdentityNumberException.ErrorCode.INVALID_LENGTH, "Input length must be 17 or 18");
+            throw new InvalidIdentityNumberException(
+                    InvalidIdentityNumberException.ErrorCode.INVALID_LENGTH,
+                    "Input length must be 17 or 18"
+            );
         }
 
         int sum = 0;
         for (int i = 0; i < 17; i++) {
             int digit = chars[i] - '0';
             if (digit < 0 || digit > 9) {
-                throw new InvalidIdentityNumberException(InvalidIdentityNumberException.ErrorCode.INVALID_CHARACTER,
+                throw new InvalidIdentityNumberException(
+                        InvalidIdentityNumberException.ErrorCode.INVALID_CHARACTER,
                         "Non-numeric character at position " + i + ": " + chars[i]);
             }
             sum += digit * WEIGHTS[i];
@@ -106,15 +109,20 @@ public class IdentityCardUtils {
      */
     public static void validate(byte[] bytes) {
         if (bytes.length != 18) {
-            throw new InvalidIdentityNumberException(InvalidIdentityNumberException.ErrorCode.INVALID_LENGTH, "ID number must be exactly 18 digits");
+            throw new InvalidIdentityNumberException(
+                    InvalidIdentityNumberException.ErrorCode.INVALID_LENGTH,
+                    "ID number must be exactly 18 digits"
+            );
         }
 
         char expected = calculateCheckCode(bytes);
         char actual = Character.toUpperCase((char) (bytes[17] & 0xFF));
 
         if (expected != actual) {
-            throw new InvalidIdentityNumberException(InvalidIdentityNumberException.ErrorCode.INVALID_CHECK_CODE,
-                    String.format("Expected '%c', actual '%c'", expected, actual));
+            throw new InvalidIdentityNumberException(
+                    InvalidIdentityNumberException.ErrorCode.INVALID_CHECK_CODE,
+                    String.format("Expected '%c', actual '%c'", expected, actual)
+            );
         }
 
         try {
@@ -125,8 +133,11 @@ public class IdentityCardUtils {
             var _ = LocalDate.of(year, month, day);
 
         } catch (DateTimeException e) {
-            throw new InvalidIdentityNumberException(InvalidIdentityNumberException.ErrorCode.INVALID_DATE,
-                    "Invalid birth date value", e);
+            throw new InvalidIdentityNumberException(
+                    InvalidIdentityNumberException.ErrorCode.INVALID_DATE,
+                    "Invalid birth date value",
+                    e
+            );
         }
     }
 
@@ -155,8 +166,10 @@ public class IdentityCardUtils {
      */
     public static String appendCheckCode(String first17Chars) {
         if (first17Chars == null || first17Chars.length() != 17) {
-            throw new InvalidIdentityNumberException(InvalidIdentityNumberException.ErrorCode.INVALID_LENGTH,
-                    "Input must be exactly 17 digits");
+            throw new InvalidIdentityNumberException(
+                    InvalidIdentityNumberException.ErrorCode.INVALID_LENGTH,
+                    "Input must be exactly 17 digits"
+            );
         }
 
         // 临时拼接一个占位符作为第18位，用于调用 calculate 方法

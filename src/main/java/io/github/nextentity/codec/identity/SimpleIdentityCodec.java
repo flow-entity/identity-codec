@@ -90,19 +90,25 @@ public class SimpleIdentityCodec implements IdentityCodec {
 
         // 2. 版本路由检查（当前仅支持版本1）
         if (version != 1) {
-            throw new InvalidEncodingException(InvalidEncodingException.ErrorCode.UNSUPPORTED_VERSION, String.valueOf(version));
+            throw new InvalidEncodingException(
+                    InvalidEncodingException.ErrorCode.UNSUPPORTED_VERSION,
+                    String.valueOf(version)
+            );
         }
 
         // 3. 校验预留位是否为0 ([63-56] 位)
-        long reservedBits = (encoded >>> 56) & 0xFF;
+        long reservedBits = (encoded >>> 56) & 0xFFL;
         if (reservedBits != 0) {
-            throw new InvalidEncodingException(InvalidEncodingException.ErrorCode.RESERVED_BITS_NOT_ZERO, String.valueOf(reservedBits));
+            throw new InvalidEncodingException(
+                    InvalidEncodingException.ErrorCode.RESERVED_BITS_NOT_ZERO,
+                    String.valueOf(reservedBits)
+            );
         }
 
-        // 4. 按位域分别提取各字段（不包含校验码）
-        int administrativeCode = (int) ((encoded >>> 36) & 0xFFFFFL); // 提取20位地址码 [55-36]
-        long daysOffset = (encoded >>> 14) & 0x3FFFFFL; // 提取22位天数 [35-14]
-        int sequenceNumber = (int) ((encoded >>> 4) & 0x3FFL); // 提取10位顺序码 [13-4]
+        // 4. 按位域分别提取各字段
+        int address = (int) ((encoded >>> 36) & 0xFFFFFL); // 地址码 [55-36]
+        long daysOffset = (encoded >>> 14) & 0x3FFFFFL;    // 生日码 [35-14]
+        int sequence = (int) ((encoded >>> 4) & 0x3FFL);   // 顺序码 [13- 4]
 
         // 5. 根据天数偏移计算出生日期
         LocalDate birth = BASE_DATE.plusDays(daysOffset);
@@ -110,27 +116,29 @@ public class SimpleIdentityCodec implements IdentityCodec {
         // 6. 校验年份是否为四位数（年份应在 0000-9999 范围内）
         int year = birth.getYear();
         if (year < 0 || year > 9999) {
-            throw new InvalidEncodingException(InvalidEncodingException.ErrorCode.INVALID_BIT_FIELD, "Birth year out of range: " + year);
+            throw new InvalidEncodingException(
+                    InvalidEncodingException.ErrorCode.INVALID_BIT_FIELD,
+                    "Birth year out of range: " + year
+            );
         }
 
-        // 7. 使用优化的方法组装前17位，避免 String.format() 开销
         byte[] buffer = new byte[18];
-        
-        // 直接填充字符数组，避免字符串格式化开销
-        appendNumber(buffer, administrativeCode, 0, 6);  // 6位地址码
-        appendNumber(buffer, birth.getYear(), 6, 4); // 4位年份
-        appendNumber(buffer, birth.getMonthValue(), 10, 2);  // 2位月份
-        appendNumber(buffer, birth.getDayOfMonth(), 12, 2);  // 2位日期
-        appendNumber(buffer, sequenceNumber, 14, 3);     // 3位顺序码
 
-        // 8. 转换为字节数组并计算校验码
+        // 7. 填充身份证号码前17位
+        appendNumber(buffer, address, 0, 6);
+        appendNumber(buffer, birth.getYear(), 6, 4);
+        appendNumber(buffer, birth.getMonthValue(), 10, 2);
+        appendNumber(buffer, birth.getDayOfMonth(), 12, 2);
+        appendNumber(buffer, sequence, 14, 3);
+
+        // 8. 填充校验码
         char checkCode = IdentityCardUtils.calculateCheckCode(buffer);
         buffer[17] = (byte) checkCode;
-        
+
         // 9. 返回完整的18位身份证号码
         return new String(buffer, StandardCharsets.ISO_8859_1);
     }
-    
+
     /**
      * 将数字追加到字符数组指定位置
      * 使用高效的数字转字符串算法
