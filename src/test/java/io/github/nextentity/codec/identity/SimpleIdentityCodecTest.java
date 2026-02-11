@@ -30,13 +30,13 @@ public class SimpleIdentityCodecTest {
         String idCard = "11010519491231002X"; // 示例身份证号码
 
         // 编码
-        long encoded = codec.encode(idCard);
+        long encoded = codec.encode(IdentityNumber.parse(idCard));
         logger.info("原始身份证: {}", idCard);
         logger.info("编码结果: {}", encoded);
         logger.info("二进制表示: {}", Long.toBinaryString(encoded));
 
         // 解码
-        String decoded = codec.decode(encoded);
+        String decoded = codec.decode(encoded).number();
         logger.info("解码结果: {}", decoded);
 
         // 验证
@@ -56,8 +56,8 @@ public class SimpleIdentityCodecTest {
         };
 
         for (String id : testIds) {
-            long encoded = codec.encode(id);
-            String decoded = codec.decode(encoded);
+            long encoded = codec.encode(IdentityNumber.parse(id));
+            String decoded = codec.decode(encoded).number();
             assertEquals(id, decoded, "地区测试失败: " + id);
         }
     }
@@ -75,8 +75,8 @@ public class SimpleIdentityCodecTest {
         };
 
         for (String id : testIds) {
-            long encoded = codec.encode(id);
-            String decoded = codec.decode(encoded);
+            long encoded = codec.encode(IdentityNumber.parse(id));
+            String decoded = codec.decode(encoded).number();
             assertEquals(id, decoded, "年份测试失败: " + id);
         }
     }
@@ -94,8 +94,8 @@ public class SimpleIdentityCodecTest {
         };
 
         for (String id : boundaryIds) {
-            long encoded = codec.encode(id);
-            String decoded = codec.decode(encoded);
+            long encoded = codec.encode(IdentityNumber.parse(id));
+            String decoded = codec.decode(encoded).number();
             assertEquals(id, decoded, "边界日期测试失败: " + id);
         }
     }
@@ -121,8 +121,8 @@ public class SimpleIdentityCodecTest {
             logger.info("测试案例 {}: {}", (i + 1), testCase);
 
             try {
-                long encoded = codec.encode(testCase);
-                String decoded = codec.decode(encoded);
+                long encoded = codec.encode(IdentityNumber.parse(testCase));
+                String decoded = codec.decode(encoded).number();
 
                 assertEquals(testCase, decoded,
                         "边界日期处理失败 - 测试案例 " + (i + 1) + ": " + testCase);
@@ -145,8 +145,8 @@ public class SimpleIdentityCodecTest {
     @Test
     void testCheckCodeWithX() {
         String idWithX = "11010119900307109X";
-        long encoded = codec.encode(idWithX);
-        String decoded = codec.decode(encoded);
+        long encoded = codec.encode(IdentityNumber.parse(idWithX));
+        String decoded = codec.decode(encoded).number();
         assertEquals(idWithX, decoded, "校验码 X 测试失败");
     }
 
@@ -163,8 +163,8 @@ public class SimpleIdentityCodecTest {
         logger.info("测试大写X: {}", upperXId);
 
         try {
-            long encodedUpper = codec.encode(upperXId);
-            String decodedUpper = codec.decode(encodedUpper);
+            long encodedUpper = codec.encode(IdentityNumber.parse(upperXId));
+            String decodedUpper = codec.decode(encodedUpper).number();
             assertEquals(upperXId, decodedUpper, "大写 X 处理失败");
             logger.info("  ✓ 大写X编码: {}", encodedUpper);
             logger.info("  ✓ 大写X解码: {}", decodedUpper);
@@ -179,8 +179,8 @@ public class SimpleIdentityCodecTest {
         logger.info("期望解码结果: {}", expectedDecoded);
 
         try {
-            long encodedLower = codec.encode(lowerXId);
-            String decodedLower = codec.decode(encodedLower);
+            long encodedLower = codec.encode(IdentityNumber.parse(lowerXId));
+            String decodedLower = codec.decode(encodedLower).number();
             assertEquals(expectedDecoded, decodedLower, "小写x处理失败 - 解码后应为大写X");
             logger.info("  ✓ 小写x编码: {}", encodedLower);
             logger.info("  ✓ 小写x解码: {}", decodedLower);
@@ -190,8 +190,8 @@ public class SimpleIdentityCodecTest {
 
         // 验证校验码的核心逻辑：大小写X都被正确识别为数值10
         // 通过比较编码结果来验证
-        long upperEncoded = codec.encode(upperXId);
-        long lowerEncoded = codec.encode(lowerXId);
+        long upperEncoded = codec.encode(IdentityNumber.parse(upperXId));
+        long lowerEncoded = codec.encode(IdentityNumber.parse(lowerXId));
 
         // 虽然原始字符串不同，但由于校验码都转换为10，其他部分相同，所以编码结果应该相同
         assertEquals(upperEncoded, lowerEncoded,
@@ -212,8 +212,8 @@ public class SimpleIdentityCodecTest {
         };
 
         for (String id : sequenceIds) {
-            long encoded = codec.encode(id);
-            String decoded = codec.decode(encoded);
+            long encoded = codec.encode(IdentityNumber.parse(id));
+            String decoded = codec.decode(encoded).number();
             assertEquals(id, decoded, "顺序码测试失败: " + id);
         }
     }
@@ -225,7 +225,7 @@ public class SimpleIdentityCodecTest {
     void testInvalidIdFormat() {
         // 测试无效月份会抛出异常
         assertThrows(Exception.class, () -> {
-            codec.encode("110101199013011234");  // 无效月份13
+            codec.encode(IdentityNumber.parse("110101199013011234"));  // 无效月份13
         }, "无效月份应该抛出异常");
 
         // 非法字符测试比较复杂，因为charAt(17)是'A'会被parseInt处理
@@ -244,7 +244,7 @@ public class SimpleIdentityCodecTest {
 
         // 测试无效的月份
         assertThrows(Exception.class, () ->
-                codec.encode("110101199013011234"), "无效月份应该抛出异常");
+                codec.encode(IdentityNumber.parse("110101199013011234")), "无效月份应该抛出异常");
     }
 
     /**
@@ -259,8 +259,8 @@ public class SimpleIdentityCodecTest {
         String baseDateId = "110101000001011236"; // 基准日期0000-01-01
         logger.info("验证基准日期: {}", baseDateId);
         try {
-            long encoded = codec.encode(baseDateId);
-            String decoded = codec.decode(encoded);
+            long encoded = codec.encode(IdentityNumber.parse(baseDateId));
+            String decoded = codec.decode(encoded).number();
             assertEquals(baseDateId, decoded, "基准日期应该能正常编码解码");
             logger.info("  ✓ 基准日期处理正常");
         } catch (Exception e) {
@@ -271,8 +271,8 @@ public class SimpleIdentityCodecTest {
         String baseDatePlusOneId = "110101000101021239"; // 基准日期后一天
         logger.info("验证基准日期后一天: {}", baseDatePlusOneId);
         try {
-            long encoded = codec.encode(baseDatePlusOneId);
-            String decoded = codec.decode(encoded);
+            long encoded = codec.encode(IdentityNumber.parse(baseDatePlusOneId));
+            String decoded = codec.decode(encoded).number();
             assertEquals(baseDatePlusOneId, decoded, "基准日期后一天应该能正常编码解码");
             logger.info("  ✓ 基准日期后一天处理正常");
         } catch (Exception e) {
@@ -288,7 +288,7 @@ public class SimpleIdentityCodecTest {
     @Test
     void testBitFieldAllocation() {
         String idCard = "11010519491231002X";
-        long encoded = codec.encode(idCard);
+        long encoded = codec.encode(IdentityNumber.parse(idCard));
 
         // 验证版本号在最低4位
         int version = (int) (encoded & 0xFL);
@@ -318,8 +318,8 @@ public class SimpleIdentityCodecTest {
 
         for (int i = 0; i < 1000000; i++) {
             for (String id : testIds) {
-                long encoded = codec.encode(id);
-                String decoded = codec.decode(encoded);
+                long encoded = codec.encode(IdentityNumber.parse(id));
+                String decoded = codec.decode(encoded).number();
                 assertEquals(id, decoded);
             }
         }
@@ -339,13 +339,13 @@ public class SimpleIdentityCodecTest {
         String id1 = "110101199001011237";
         String id2 = "110101199001011245"; // 只差一位
 
-        long encoded1 = codec.encode(id1);
-        long encoded2 = codec.encode(id2);
+        long encoded1 = codec.encode(IdentityNumber.parse(id1));
+        long encoded2 = codec.encode(IdentityNumber.parse(id2));
 
         assertNotEquals(encoded1, encoded2, "不同的身份证应该产生不同的编码");
 
         // 验证同一个身份证多次编码结果一致
-        long encoded1Again = codec.encode(id1);
+        long encoded1Again = codec.encode(IdentityNumber.parse(id1));
         assertEquals(encoded1, encoded1Again, "同一身份证多次编码应该一致");
     }
 
@@ -368,7 +368,7 @@ public class SimpleIdentityCodecTest {
             // 只设置版本号位
 
             // 验证应该抛出 InvalidEncodingException 异常
-            Exception exception = assertThrows(IdentityCodecException.class, () -> codec.decode(version), "不支持的版本号应该抛出异常");
+            Exception exception = assertThrows(IdentityCodecException.class, () -> codec.decode(version).number(), "不支持的版本号应该抛出异常");
 
             // 验证异常消息包含正确的版本信息
             String expectedMessage = "Unsupported compression version: " + version;
@@ -383,8 +383,8 @@ public class SimpleIdentityCodecTest {
         logger.info("验证支持的版本1:");
         try {
             String validId = "110101199001011237";
-            long encoded = codec.encode(validId);
-            String decoded = codec.decode(encoded);
+            long encoded = codec.encode(IdentityNumber.parse(validId));
+            String decoded = codec.decode(encoded).number();
             assertEquals(validId, decoded, "版本1应该能正常解码");
             logger.info("  ✓ 版本1处理正常");
         } catch (Exception e) {
@@ -399,7 +399,7 @@ public class SimpleIdentityCodecTest {
 
             long testData = version;
             assertThrows(IdentityCodecException.class, () ->
-                    codec.decode(testData), "版本 " + version + " 应该抛出异常");
+                    codec.decode(testData).number(), "版本 " + version + " 应该抛出异常");
         }
         logger.info("  ✓ 所有非1版本都正确抛出异常");
 
@@ -439,14 +439,14 @@ public class SimpleIdentityCodecTest {
             logger.info("测试用例 {}: {}", (i + 1), idCard);
 
             try {
-                long actualEncoded = codec.encode(idCard);
+                long actualEncoded = codec.encode(IdentityNumber.parse(idCard));
                 logger.info("  期望编码: {}", expectedEncoded);
                 logger.info("  实际编码: {}", actualEncoded);
 
                 assertEquals(expectedEncoded, actualEncoded,
                         "编码结果不匹配 - 测试用例 " + (i + 1) + ": " + idCard);
 
-                String decoded = codec.decode(actualEncoded);
+                String decoded = codec.decode(actualEncoded).number();
                 logger.info("  解码结果: {}", decoded);
 
                 assertEquals(idCard, decoded,

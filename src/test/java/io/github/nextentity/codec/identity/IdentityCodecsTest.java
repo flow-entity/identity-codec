@@ -26,8 +26,8 @@ public class IdentityCodecsTest {
         
         // 测试基本功能
         String idCard = TestConstants.VALID_ID_CARD_WITH_X;
-        long encoded = codec.encode(idCard);
-        String decoded = codec.decode(encoded);
+        long encoded = codec.encode(IdentityNumber.parse(idCard));
+        String decoded = codec.decode(encoded).number();
         assertEquals(idCard, decoded, "简单编码器应该能正确编解码");
         
         logger.info("简单编码器测试通过");
@@ -47,13 +47,13 @@ public class IdentityCodecsTest {
         
         // 测试基本功能
         String idCard = "11010519491231002X";
-        long encoded = codec.encode(idCard);
-        String decoded = codec.decode(encoded);
+        long encoded = codec.encode(IdentityNumber.parse(idCard));
+        String decoded = codec.decode(encoded).number();
         assertEquals(idCard, decoded, "SPECK64加密编码器应该能正确编解码");
         
         // 验证加密结果与简单编码器不同
         IdentityCodec simpleCodec = IdentityCodecs.simple();
-        long simpleEncoded = simpleCodec.encode(idCard);
+        long simpleEncoded = simpleCodec.encode(IdentityNumber.parse(idCard));
         assertNotEquals(simpleEncoded, encoded, "加密编码结果应该与简单编码结果不同");
         
         logger.info("SPECK64加密编码器(int数组密钥)测试通过");
@@ -79,8 +79,8 @@ public class IdentityCodecsTest {
         
         // 测试基本功能
         String idCard = "11010519491231002X";
-        long encoded = codec.encode(idCard);
-        String decoded = codec.decode(encoded);
+        long encoded = codec.encode(IdentityNumber.parse(idCard));
+        String decoded = codec.decode(encoded).number();
         assertEquals(idCard, decoded, "SPECK64加密编码器应该能正确编解码");
         
         logger.info("SPECK64加密编码器(字节数组密钥)测试通过");
@@ -149,14 +149,14 @@ public class IdentityCodecsTest {
         IdentityCodec codec1 = IdentityCodecs.speck64Encrypt(key1);
         IdentityCodec codec2 = IdentityCodecs.speck64Encrypt(key2);
         
-        long result1 = codec1.encode(idCard);
-        long result2 = codec2.encode(idCard);
+        long result1 = codec1.encode(IdentityNumber.parse(idCard));
+        long result2 = codec2.encode(IdentityNumber.parse(idCard));
         
         assertNotEquals(result1, result2, "不同密钥应该产生不同的加密结果");
         
         // 但各自应该能正确解密
-        assertEquals(idCard, codec1.decode(result1));
-        assertEquals(idCard, codec2.decode(result2));
+        assertEquals(idCard, codec1.decode(result1).number());
+        assertEquals(idCard, codec2.decode(result2).number());
         
         logger.info("不同密钥产生不同结果测试通过");
     }
@@ -172,8 +172,8 @@ public class IdentityCodecsTest {
         IdentityCodec codec1 = IdentityCodecs.speck64Encrypt(key);
         IdentityCodec codec2 = IdentityCodecs.speck64Encrypt(key);
         
-        long result1 = codec1.encode(idCard);
-        long result2 = codec2.encode(idCard);
+        long result1 = codec1.encode(IdentityNumber.parse(idCard));
+        long result2 = codec2.encode(IdentityNumber.parse(idCard));
         
         assertEquals(result1, result2, "相同密钥应该产生相同的加密结果");
         
@@ -201,14 +201,14 @@ public class IdentityCodecsTest {
         IdentityCodec intKeyCodec = IdentityCodecs.speck64Encrypt(intKey);
         IdentityCodec byteKeyCodec = IdentityCodecs.speck64Encrypt(byteKey);
         
-        long intResult = intKeyCodec.encode(idCard);
-        long byteResult = byteKeyCodec.encode(idCard);
+        long intResult = intKeyCodec.encode(IdentityNumber.parse(idCard));
+        long byteResult = byteKeyCodec.encode(IdentityNumber.parse(idCard));
         
         assertEquals(intResult, byteResult, "int数组和字节数组密钥应该产生相同的加密结果");
         
         // 验证都能正确解密
-        assertEquals(idCard, intKeyCodec.decode(intResult));
-        assertEquals(idCard, byteKeyCodec.decode(byteResult));
+        assertEquals(idCard, intKeyCodec.decode(intResult).number());
+        assertEquals(idCard, byteKeyCodec.decode(byteResult).number());
         
         logger.info("int数组和字节数组密钥等价性测试通过");
     }
@@ -249,8 +249,8 @@ public class IdentityCodecsTest {
         // 测试简单编码器
         IdentityCodec simpleCodec = IdentityCodecs.simple();
         for (String id : testIds) {
-            long encoded = simpleCodec.encode(id);
-            String decoded = simpleCodec.decode(encoded);
+            long encoded = simpleCodec.encode(IdentityNumber.parse(id));
+            String decoded = simpleCodec.decode(encoded).number();
             assertEquals(id, decoded, "简单编码器处理失败: " + id);
         }
         
@@ -258,8 +258,8 @@ public class IdentityCodecsTest {
         int[] key = {0x01234567, 0x89ABCDEF, 0xFEDCBA98, 0x76543210};
         IdentityCodec encryptedCodec = IdentityCodecs.speck64Encrypt(key);
         for (String id : testIds) {
-            long encoded = encryptedCodec.encode(id);
-            String decoded = encryptedCodec.decode(encoded);
+            long encoded = encryptedCodec.encode(IdentityNumber.parse(id));
+            String decoded = encryptedCodec.decode(encoded).number();
             assertEquals(id, decoded, "加密编码器处理失败: " + id);
         }
         

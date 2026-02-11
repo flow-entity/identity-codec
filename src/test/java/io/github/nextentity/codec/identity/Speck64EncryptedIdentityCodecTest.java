@@ -32,12 +32,12 @@ public class Speck64EncryptedIdentityCodecTest {
         String idCard = "11010519491231002X";
 
         // 编码
-        long encoded = encryptedCodec.encode(idCard);
+        long encoded = encryptedCodec.encode(IdentityNumber.parse(idCard));
         logger.info("身份证: {}", idCard);
         logger.info("编码结果: {}", Long.toHexString(encoded));
 
         // 解码
-        String decoded = encryptedCodec.decode(encoded);
+        String decoded = encryptedCodec.decode(encoded).number();
         logger.info("解码结果: {}", decoded);
 
         assertEquals(idCard, decoded, "解码后的身份证应该与原始一致");
@@ -52,8 +52,8 @@ public class Speck64EncryptedIdentityCodecTest {
         String idCard1 = "11010519491231002X";
         String idCard2 = "11010119900307109X"; // 使用已知有效的不同身份证
 
-        long result1 = encryptedCodec.encode(idCard1);
-        long result2 = encryptedCodec.encode(idCard2);
+        long result1 = encryptedCodec.encode(IdentityNumber.parse(idCard1));
+        long result2 = encryptedCodec.encode(IdentityNumber.parse(idCard2));
 
         assertNotEquals(result1, result2, "不同身份证应该产生不同的编码结果");
     }
@@ -74,8 +74,8 @@ public class Speck64EncryptedIdentityCodecTest {
         IdentityCodec byteKeyCodec = IdentityCodecs.speck64Encrypt(keyBytes);
 
         String idCard = "11010519491231002X";
-        long encoded = byteKeyCodec.encode(idCard);
-        String decoded = byteKeyCodec.decode(encoded);
+        long encoded = byteKeyCodec.encode(IdentityNumber.parse(idCard));
+        String decoded = byteKeyCodec.decode(encoded).number();
 
         assertEquals(idCard, decoded, "使用字节数组密钥应该能正确编解码");
     }
@@ -92,8 +92,8 @@ public class Speck64EncryptedIdentityCodecTest {
         };
 
         for (String id : validIds) {
-            long encoded = encryptedCodec.encode(id);
-            String decoded = encryptedCodec.decode(encoded);
+            long encoded = encryptedCodec.encode(IdentityNumber.parse(id));
+            String decoded = encryptedCodec.decode(encoded).number();
             assertEquals(id, decoded, "有效身份证 " + id + " 应该能正确编解码");
         }
     }
@@ -104,8 +104,8 @@ public class Speck64EncryptedIdentityCodecTest {
     @Test
     void testInvalidInput() {
         // 测试无效身份证格式
-        assertThrows(InvalidIdentityNumberException.class, () -> encryptedCodec.encode("123"));
-        assertThrows(InvalidIdentityNumberException.class, () -> encryptedCodec.encode("110105194912310021")); // 校验位错误
+        assertThrows(IdentityNumberFormatException.class, () -> encryptedCodec.encode(IdentityNumber.parse("123")));
+        assertThrows(IdentityNumberFormatException.class, () -> encryptedCodec.encode(IdentityNumber.parse("110105194912310021"))); // 校验位错误
     }
 
     /**
@@ -122,8 +122,8 @@ public class Speck64EncryptedIdentityCodecTest {
         IdentityCodec codec1 = IdentityCodecs.speck64Encrypt(key1);
         IdentityCodec codec2 = IdentityCodecs.speck64Encrypt(key2);
 
-        long result1 = codec1.encode(idCard);
-        long result2 = codec2.encode(idCard);
+        long result1 = codec1.encode(IdentityNumber.parse(idCard));
+        long result2 = codec2.encode(IdentityNumber.parse(idCard));
 
         assertNotEquals(result1, result2, "不同密钥应该产生不同的加密结果");
     }
@@ -144,8 +144,8 @@ public class Speck64EncryptedIdentityCodecTest {
         // 批量处理
         for (int i = 0; i < 1000000; i++) {
             for (String id : testIds) {
-                long encoded = encryptedCodec.encode(id);
-                String decoded = encryptedCodec.decode(encoded);
+                long encoded = encryptedCodec.encode(IdentityNumber.parse(id));
+                String decoded = encryptedCodec.decode(encoded).number();
                 assertEquals(id, decoded);
             }
         }
@@ -163,7 +163,7 @@ public class Speck64EncryptedIdentityCodecTest {
     @Test
     void testEncryptionStrength() {
         String idCard = "11010519491231002X";
-        long encoded = encryptedCodec.encode(idCard);
+        long encoded = encryptedCodec.encode(IdentityNumber.parse(idCard));
 
         // 验证加密结果看起来是随机的
         assertNotEquals(idCard.hashCode(), encoded, "加密结果不应该等于原始哈希值");
@@ -172,7 +172,7 @@ public class Speck64EncryptedIdentityCodecTest {
 
         // 验证雪崩效应
         String idCard2 = "11010119900307109X"; // 使用不同的有效身份证
-        long encoded2 = encryptedCodec.encode(idCard2);
+        long encoded2 = encryptedCodec.encode(IdentityNumber.parse(idCard2));
         long diff = encoded ^ encoded2;
         assertNotEquals(0L, diff, "不同输入应该导致不同的输出");
     }

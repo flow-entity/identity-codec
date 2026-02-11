@@ -9,24 +9,24 @@ import java.io.Serial;
  *
  * @version 1.0
  */
-public class InvalidIdentityNumberException extends IdentityCodecException {
+public class IdentityNumberFormatException extends IdentityCodecException {
 
     @Serial
     private static final long serialVersionUID = 4270343855622804394L;
 
-    public InvalidIdentityNumberException(String message) {
+    public IdentityNumberFormatException(String message) {
         super(message);
     }
 
-    public InvalidIdentityNumberException(ErrorCode errorCode, String detail) {
+    public IdentityNumberFormatException(ErrorCode errorCode, String detail) {
         super(errorCode, detail);
     }
 
-    public InvalidIdentityNumberException(ErrorCode errorCode, String detail, Throwable cause) {
+    public IdentityNumberFormatException(ErrorCode errorCode, String detail, Throwable cause) {
         super(errorCode, detail, cause);
     }
 
-    public InvalidIdentityNumberException(String message, Throwable cause) {
+    public IdentityNumberFormatException(String message, Throwable cause) {
         super(message, cause);
     }
 }

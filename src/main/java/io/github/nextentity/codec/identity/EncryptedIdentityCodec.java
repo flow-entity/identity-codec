@@ -84,13 +84,13 @@ public class EncryptedIdentityCodec implements IdentityCodec {
      *
      * @param identityNumber 18位身份证号码字符串
      * @return 加密编码后的 long 值
-     * @throws InvalidIdentityNumberException 当身份证格式不正确时抛出
+     * @throws IdentityNumberFormatException 当身份证格式不正确时抛出
      * @throws IdentityCodecException         当加密过程中发生错误时抛出
-     * @see #decode(long)
-     * @see SimpleIdentityCodec#encode(String)
+     * @see #decodeToString(long)
+     * @see IdentityCodec#encode(IdentityNumber)
      */
     @Override
-    public long encode(@NonNull String identityNumber) {
+    public long encode(@NonNull IdentityNumber identityNumber) {
         long encodedIdentity = codec.encode(identityNumber);
         try {
             return encryptor.encrypt(encodedIdentity);
@@ -110,11 +110,11 @@ public class EncryptedIdentityCodec implements IdentityCodec {
      * @param encryptedValue 加密编码后的 long 值
      * @return 18位身份证号码字符串
      * @throws IdentityCodecException 当解密失败或数据格式错误时抛出
-     * @see #encode(String)
-     * @see SimpleIdentityCodec#decode(long)
+     * @see IdentityCodec#encode(IdentityNumber)
+     * @see SimpleIdentityCodec#decodeToString(long)
      */
     @Override
-    public @NonNull String decode(long encryptedValue) {
+    public @NonNull IdentityNumber decode(long encryptedValue) {
         long decryptedIdentity;
         try {
             decryptedIdentity = encryptor.decrypt(encryptedValue);

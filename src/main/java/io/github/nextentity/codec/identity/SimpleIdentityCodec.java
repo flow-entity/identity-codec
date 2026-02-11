@@ -1,7 +1,7 @@
 package io.github.nextentity.codec.identity;
 
 import org.jspecify.annotations.NonNull;
-import java.nio.charset.StandardCharsets;
+
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 
@@ -46,31 +46,22 @@ public class SimpleIdentityCodec implements IdentityCodec {
      *
      * @param identityNumber 18 位身份证号码字符串
      * @return 编码后的 long 值（使用 56 位，高位预留8位为 0）
-     * @throws InvalidIdentityNumberException 当身份证格式不正确或出生日期超出范围时抛出
-     * @see #decode(long)
+     * @throws IdentityNumberFormatException 当身份证格式不正确或出生日期超出范围时抛出
      */
     @Override
-    public long encode(@NonNull String identityNumber) {
-        byte[] buffer = identityNumber.getBytes(StandardCharsets.ISO_8859_1);
-        IdentityCardUtils.validate(buffer);
-        // 1. 解析 18 位身份证号码各组成部分（不存储校验码）
-        int address = IdentityCardUtils.parseInt(buffer, 0, 6); // 6 位地址码
-        int year = IdentityCardUtils.parseInt(buffer, 6, 10); // 4 位年份
-        int month = IdentityCardUtils.parseInt(buffer, 10, 12); // 2 位月份
-        int day = IdentityCardUtils.parseInt(buffer, 12, 14); // 2 位日期
-        int sequence = IdentityCardUtils.parseInt(buffer, 14, 17); // 3 位顺序码
+    public long encode(@NonNull IdentityNumber identityNumber) {
 
         // 2. 计算出生日期距离基准日期 (0000-01-01) 的天数偏移
-        LocalDate birth = LocalDate.of(year, month, day);
+        LocalDate birth = LocalDate.of(identityNumber.year(), identityNumber.month(), identityNumber.day());
         long daysOffset = ChronoUnit.DAYS.between(BASE_DATE, birth);
 
         // 3. 按位域结构组合各字段 (总共 56 位，不含校验码)
         long result = 0L;
         // 预留高位 [63-56] 保持为 0，确保兼容性
-        result |= ((long) address & 0xFFFFFL) << 36; // 20 位地址码 -> [55-36] 位
-        result |= (daysOffset & 0x3FFFFFL) << 14;    // 22 位生日码 -> [35-14] 位
-        result |= ((long) sequence & 0x3FFL) << 4;   // 10 位顺序码 -> [13- 4] 位
-        result |= (VERSION & 0xFL);                  //  4 位版本号 -> [ 3- 0] 位
+        result |= (identityNumber.address() & 0xFFFFFL) << 36; // 20 位地址码 -> [55-36] 位
+        result |= (daysOffset & 0x3FFFFFL) << 14;              // 22 位生日码 -> [35-14] 位
+        result |= (identityNumber.sequence() & 0x3FFL) << 4;   // 10 位顺序码 -> [13- 4] 位
+        result |= (VERSION & 0xFL);                            //  4 位版本号 -> [ 3- 0] 位
         return result;
     }
 
@@ -88,10 +79,10 @@ public class SimpleIdentityCodec implements IdentityCodec {
      * @param encoded 编码后的 long 值
      * @return 18 位身份证号码字符串
      * @throws IdentityCodecException 当版本不支持或数据格式错误时抛出
-     * @see #encode(String)
+     * @see IdentityCodec#encode(IdentityNumber)
      */
     @Override
-    public @NonNull String decode(long encoded) {
+    public @NonNull IdentityNumber decode(long encoded) {
         // 1. 提取版本号 ([3-0] 位)
         int version = (int) (encoded & 0xFL);
 
@@ -122,44 +113,7 @@ public class SimpleIdentityCodec implements IdentityCodec {
 
         // 6. 校验年份是否为四位数（年份应在 0000-9999 范围内）
         int year = birth.getYear();
-        if (year < 0 || year > 9999) {
-            throw new IdentityCodecException(
-                    ErrorCode.INVALID_BIT_FIELD,
-                    "Birth year out of range: " + year
-            );
-        }
-
-        byte[] buffer = new byte[18];
-
-        // 7. 填充身份证号码前17位
-        appendNumber(buffer, address, 0, 6);
-        appendNumber(buffer, birth.getYear(), 6, 4);
-        appendNumber(buffer, birth.getMonthValue(), 10, 2);
-        appendNumber(buffer, birth.getDayOfMonth(), 12, 2);
-        appendNumber(buffer, sequence, 14, 3);
-
-        // 8. 填充校验码
-        char checkCode = IdentityCardUtils.calculateCheckCode(buffer);
-        buffer[17] = (byte) checkCode;
-
-        // 9. 返回完整的18位身份证号码
-        return new String(buffer, StandardCharsets.ISO_8859_1);
+        return IdentityNumber.format(address, (short) year, (byte) birth.getMonthValue(), (byte) birth.getDayOfMonth(), (short) sequence);
     }
 
-    /**
-     * 将数字追加到字符数组指定位置
-     * 使用高效的数字转字符串算法
-     *
-     * @param buffer 字符数组缓冲区
-     * @param number 要转换的数字
-     * @param offset 起始位置
-     * @param width  固定宽度（不足补0）
-     */
-    private void appendNumber(byte[] buffer, int number, int offset, int width) {
-        int pos = offset + width - 1;
-        while (pos >= offset) {
-            buffer[pos--] = (byte) ('0' + (number % 10));
-            number /= 10;
-        }
-    }
 }

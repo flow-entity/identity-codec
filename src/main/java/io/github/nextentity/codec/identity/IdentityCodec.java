@@ -33,10 +33,11 @@ public interface IdentityCodec {
      *
      * @param identityNumber 18位身份证号码字符串
      * @return 编码后的 long 值
-     * @throws InvalidIdentityNumberException 当输入格式不正确时抛出
-     * @throws IdentityCodecException         当编码过程中发生错误时抛出
+     * @throws IdentityNumberFormatException 当输入格式不正确时抛出
+     * @throws IdentityCodecException        当编码过程中发生错误时抛出
      */
-    long encode(@NonNull String identityNumber);
+    long encode(@NonNull IdentityNumber identityNumber);
+
 
     /**
      * 将 long 类型的编码解码为身份证号码
@@ -45,5 +46,6 @@ public interface IdentityCodec {
      * @return 18 位身份证号码字符串
      * @throws IdentityCodecException 当解码失败时抛出
      */
-    @NonNull String decode(long encoded);
+    @NonNull IdentityNumber decode(long encoded);
+
 }
