@@ -66,26 +66,56 @@ public final class IdentityNumber {
         return new IdentityNumber(number, bytes, address, year, month, day, sequence).validateFormat();
     }
 
+    /**
+     * 获取完整的身份证号码字符串
+     *
+     * @return 18位身份证号码字符串
+     */
     public String number() {
         return number;
     }
 
+    /**
+     * 获取地址码（行政区划代码）
+     *
+     * @return 6位地址码
+     */
     public int address() {
         return address;
     }
 
+    /**
+     * 获取出生年份
+     *
+     * @return 出生年份（0000-9999）
+     */
     public short year() {
         return year;
     }
 
+    /**
+     * 获取出生月份
+     *
+     * @return 出生月份（1-12）
+     */
     public byte month() {
         return month;
     }
 
+    /**
+     * 获取出生日期
+     *
+     * @return 出生日期（1-31）
+     */
     public byte day() {
         return day;
     }
 
+    /**
+     * 获取顺序码
+     *
+     * @return 3位顺序码（000-999）
+     */
     public short sequence() {
         return sequence;
     }

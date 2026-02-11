@@ -31,6 +31,11 @@ public class SimpleIdentityCodec implements IdentityCodec {
 
     public static final IdentityCodec INSTANCE = new SimpleIdentityCodec();
 
+    /**
+     * 获取单例实例
+     *
+     * @return SimpleIdentityCodec 单例实例
+     */
     public static IdentityCodec of() {
         return INSTANCE;
     }

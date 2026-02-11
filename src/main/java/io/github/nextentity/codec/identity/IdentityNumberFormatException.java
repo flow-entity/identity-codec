@@ -14,10 +14,21 @@ public class IdentityNumberFormatException extends IdentityCodecException {
     @Serial
     private static final long serialVersionUID = 4270343855622804394L;
 
+    /**
+     * 构造函数
+     *
+     * @param message 异常信息
+     */
     public IdentityNumberFormatException(String message) {
         super(message);
     }
 
+    /**
+     * 构造函数（带原因）
+     *
+     * @param message 异常信息
+     * @param cause   异常原因
+     */
     public IdentityNumberFormatException(String message, Throwable cause) {
         super(message, cause);
     }

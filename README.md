@@ -21,8 +21,9 @@ Identity Codec 是一个高效的身份证明编码库，专门用于将18位中
 ### 核心组件
 
 ```text
-// 主要接口
-IdentityCodec - 统一编码接口
+// 核心类
+IdentityNumber     - 身份证号码封装类
+IdentityCodec      - 统一编码接口
 
 // 实现类
 SimpleIdentityCodec     - 基础身份编码器
@@ -42,6 +43,27 @@ IdentityCodecs          - 工厂类
 [13- 4]: 顺序码 (10 位) - 同日出生人员序号
 [ 3- 0]: 版本号 ( 4 位) - 编码版本标识
 ```
+
+### 身份证验证规则
+
+`IdentityNumber` 类实现了严格的身份证号码验证：
+
+**基本格式验证**：
+- 长度必须为18位
+- 前17位必须为数字
+- 第18位可以是数字或大写字母X
+
+**语义验证**：
+- 地址码：000000-999999
+- 年份：0000-9999
+- 月份：01-12
+- 日期：根据月份和闰年验证具体天数
+- 顺序码：000-999
+- 校验码：根据国家标准GB 11643计算验证
+
+**特殊处理**：
+- 自动将小写x转换为大写X
+- 严格的日期有效性检查（包括闰年判断）
 
 ## 快速开始
 
@@ -96,9 +118,16 @@ void main() {
 
 | 操作类型 | 平均耗时 | 吞吐量 |
 |---------|---------|--------|
+| 身份证解析 | ~0.05μs | >2M ops/sec |
 | 普通编码 | ~0.1μs | >1M ops/sec |
 | 加密编码 | ~0.2μs | >500K ops/sec |
 | 解码操作 | ~0.1μs | >1M ops/sec |
+
+### 内存效率
+
+- **IdentityNumber对象**：约40字节（包含字符串缓存）
+- **编码后数据**：8字节（long类型）
+- **内存优化**：内部缓存原始字符串，避免重复解析
 
 ### 存储效率
 
@@ -134,6 +163,24 @@ SPECK是一族轻量级分组密码算法。
 
 ### 主要类和接口
 
+#### IdentityNumber (核心类)
+身份证号码的封装类，提供身份证号码的解析、验证和格式化功能。
+
+```java
+// 解析身份证号码
+IdentityNumber id = IdentityNumber.parse("11010519491231002X");
+
+// 格式化身份证号码
+IdentityNumber id = IdentityNumber.format(110105, (short)1949, (byte)12, (byte)31, (short)2);
+
+// 获取身份证信息
+int address = id.address();    // 地址码
+short year = id.year();        // 年份
+byte month = id.month();       // 月份
+byte day = id.day();           // 日期
+short sequence = id.sequence(); // 顺序码
+```
+
 #### IdentityCodec (接口)
 统一的身份编码接口，定义编码和解码标准方法。
 
@@ -162,17 +209,29 @@ SPECK64加密算法的具体实现，提供64位数据的加密解密功能。
 ```java
 void main() {
     try {
-        long encoded = codec.encode(invalidIdCard);
-    } catch (InvalidIdentityNumberException e) {
-        // 处理无效身份证格式
+        // 身份证号码解析异常
+        IdentityNumber id = IdentityNumber.parse("invalid_id_card");
+    } catch (IdentityNumberFormatException e) {
+        // 处理无效身份证格式（长度、字符、校验码等）
+        System.err.println("身份证格式错误: " + e.getMessage());
     }
 
     try {
-        String decoded = codec.decode(invalidValue);
-    } catch (InvalidEncodingException e) {
-        // 处理编码错误
+        // 编码异常
+        long encoded = codec.encode(IdentityNumber.parse("11010519491231002X"));
+    } catch (IdentityCodecException e) {
+        // 处理编码错误（版本不支持、数据格式错误等）
+        System.err.println("编码错误: " + e.getMessage());
     }
-}
+
+    try {
+        // 解码异常
+        IdentityNumber decoded = codec.decode(invalidEncodedValue);
+    } catch (IdentityCodecException e) {
+        // 处理解码错误
+        System.err.println("解码错误: " + e.getMessage());
+    }
+}```
 ```
 
 ## 开发指南
@@ -213,9 +272,10 @@ mvn jacoco:report
 ### 代码规范
 
 - 遵循Google Java Style Guide
-- 所有公共方法必须包含Javadoc注释
-- 单元测试覆盖率不低于80%
+- 所有公共方法必须包含 Javadoc 注释
+- 单元测试覆盖率不低于85%
 - 提交前运行所有测试确保通过
+- 新增功能需提供相应的单元测试
 
 ---
 
