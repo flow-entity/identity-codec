@@ -4,7 +4,9 @@ import org.jspecify.annotations.NonNull;
 
 import java.nio.charset.StandardCharsets;
 import java.time.DateTimeException;
-import java.time.LocalDate;
+import java.time.Month;
+import java.time.chrono.IsoChronology;
+import java.time.temporal.ChronoField;
 
 /**
  * 身份证号码工具类
@@ -131,7 +133,24 @@ public class IdentityCardUtils {
             int month = parseInt(bytes, 10, 12);
             int day = parseInt(bytes, 12, 14);
 
-            var _ = LocalDate.of(year, month, day);
+            ChronoField.YEAR.checkValidValue(year);
+            ChronoField.MONTH_OF_YEAR.checkValidValue(month);
+            ChronoField.DAY_OF_MONTH.checkValidValue(day);
+
+            if (day > 28) {
+                int dom = switch (month) {
+                    case 2 -> (IsoChronology.INSTANCE.isLeapYear(year) ? 29 : 28);
+                    case 4, 6, 9, 11 -> 30;
+                    default -> 31;
+                };
+                if (day > dom) {
+                    if (day == 29) {
+                        throw new DateTimeException("Invalid date 'February 29' as '" + year + "' is not a leap year");
+                    } else {
+                        throw new DateTimeException("Invalid date '" + Month.of(month).name() + " " + day + "'");
+                    }
+                }
+            }
 
         } catch (DateTimeException e) {
             throw new InvalidIdentityNumberException(
@@ -150,7 +169,7 @@ public class IdentityCardUtils {
      * @param end   结束位置（不包含）
      * @return 解析得到的整数值
      */
-    public static int parseInt(byte[] str, int start, int end) {
+    static int parseInt(byte[] str, int start, int end) {
         int result = 0;
         for (int i = start; i < end; i++) {
             result = result * 10 + (str[i] - '0');

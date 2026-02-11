@@ -133,7 +133,7 @@ public class Speck64Encryptor implements Encryptor {
      *
      * @return 轮密钥数组
      */
-    public int[] generateKeys(int[] key, int rounds) {
+    public int[] generateKeys(int @NonNull [] key, int rounds) {
         int[] schedule = new int[key.length - 1];
         int[] result = new int[rounds];
         System.arraycopy(key, 0, schedule, 0, key.length - 1);
