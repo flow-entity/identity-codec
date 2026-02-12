@@ -306,8 +306,13 @@ class IdentityNumberTest {
         logger.info("=== toString测试 ===");
 
         IdentityNumber identity = IdentityNumber.parse("110101199001011237");
-        assertEquals("110101199001011237", identity.toString());
-        logger.info("✓ toString测试通过: {}", identity);
+        // toString() 现在返回掩码版本（前后各保留4位）
+        assertEquals("1101**********1237", identity.toString());
+        logger.info("✓ toString掩码测试通过: {}", identity);
+        
+        // number() 返回完整号码
+        assertEquals("110101199001011237", identity.number());
+        logger.info("✓ number完整号码测试通过: {}", identity.number());
 
         logger.info("toString测试完成");
     }
