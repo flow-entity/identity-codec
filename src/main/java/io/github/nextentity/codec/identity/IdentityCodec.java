@@ -18,7 +18,7 @@ import org.jspecify.annotations.NonNull;
  * <p>
  * 不加密编码直接实例化 SimpleIdentityCodec
  * <pre>{@code
- * IdentityCodec simpleCodec = new SimpleIdentityCodec();}
+ * IdentityCodec simpleCodec = IdentityCodecs.simple();}
  * </pre>
  *
  * @version 1.0
