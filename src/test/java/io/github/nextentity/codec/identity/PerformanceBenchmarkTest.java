@@ -320,7 +320,7 @@ class PerformanceBenchmarkTest {
         long initialMemory = runtime.totalMemory() - runtime.freeMemory();
 
         // 创建大量对象
-        IdentityNumber[] numbers = new IdentityNumber[100_000];
+        IdentityNumber[] numbers = new IdentityNumber[1_000_000];
         for (int i = 0; i < numbers.length; i++) {
             numbers[i] = IdentityNumber.parse(testIdCards[i % testIdCards.length]);
         }
@@ -337,7 +337,7 @@ class PerformanceBenchmarkTest {
         logger.info("  平均每个对象内存: {} bytes", String.format("%.2f", avgMemoryPerObject));
 
         // 内存使用断言 - 放宽限制
-        assertTrue(avgMemoryPerObject < 200, "平均每个IdentityNumber对象内存应小于200字节");
+        assertTrue(avgMemoryPerObject < 200, "平均每个IdentityNumber对象内存应小于200字节, 实际：" + avgMemoryPerObject + "字节");
 
         // 清理引用
         for (int i = 0; i < numbers.length; i++) {
