@@ -19,51 +19,38 @@ public final class IdentityNumber {
      */
     private static final byte[] CHECK_CODES = {'1', '0', 'X', '9', '8', '7', '6', '5', '4', '3', '2'};
 
+    private static final Segment ADDRESS = new Segment("address", 0, 6);
+    private static final Segment YEAR = new Segment("year", 6, 10);
+    private static final Segment MONTH = new Segment("month", 10, 12, 12);
+    private static final Segment DAY = new Segment("day", 12, 14, 31);
+    private static final Segment SEQUENCE = new Segment("sequence", 14, 17);
+
     private final String number;
     private final byte[] bytes;
-    private final int address;
-    private final short year;
-    private final byte month;
-    private final byte day;
-    private final short sequence;
 
 
-    private IdentityNumber(String number, byte[] bytes, int address, short year, byte month, byte day, short sequence) {
+    private IdentityNumber(String number, byte[] bytes) {
         this.number = number;
         this.bytes = bytes;
-        this.address = address;
-        this.year = year;
-        this.month = month;
-        this.day = day;
-        this.sequence = sequence;
     }
 
     public static IdentityNumber parse(@NonNull String number) {
-        if (number.length() != 18) {
-            throw new IdentityNumberFormatException("Invalid identity number length: " + number.length());
-        }
         number = number.toUpperCase();
         byte[] bytes = number.getBytes();
-        int address = parse(bytes, 0, 6);
-        int year = parse(bytes, 6, 10);
-        int month = parse(bytes, 10, 12);
-        int day = parse(bytes, 12, 14);
-        int sequence = parse(bytes, 14, 17);
-        return new IdentityNumber(number, bytes, address, (short) year, (byte) month, (byte) day, (short) sequence).validateParse();
+        return new IdentityNumber(number, bytes).validateParse();
     }
 
 
-    public static IdentityNumber format(int address, short year, byte month, byte day, short sequence) {
+    public static IdentityNumber format(int address, int year, int month, int day, int sequence) {
         byte[] bytes = new byte[18];
-        format(bytes, address, 0, 6);
-        format(bytes, year, 6, 4);
-        format(bytes, month, 10, 2);
-        format(bytes, day, 12, 2);
-        format(bytes, sequence, 14, 3);
+        setSegment(bytes, ADDRESS, address);
+        setSegment(bytes, YEAR, year);
+        setSegment(bytes, MONTH, month);
+        setSegment(bytes, DAY, day);
+        setSegment(bytes, SEQUENCE, sequence);
         bytes[17] = calculateChecksum(bytes);
         String number = new String(bytes);
-
-        return new IdentityNumber(number, bytes, address, year, month, day, sequence).validateFormat();
+        return new IdentityNumber(number, bytes).validateFormat();
     }
 
     /**
@@ -81,7 +68,7 @@ public final class IdentityNumber {
      * @return 6位地址码
      */
     public int address() {
-        return address;
+        return getSegment(bytes, ADDRESS);
     }
 
     /**
@@ -89,8 +76,8 @@ public final class IdentityNumber {
      *
      * @return 出生年份（0000-9999）
      */
-    public short year() {
-        return year;
+    public int year() {
+        return getSegment(bytes, YEAR);
     }
 
     /**
@@ -98,8 +85,8 @@ public final class IdentityNumber {
      *
      * @return 出生月份（1-12）
      */
-    public byte month() {
-        return month;
+    public int month() {
+        return getSegment(bytes, MONTH);
     }
 
     /**
@@ -107,8 +94,8 @@ public final class IdentityNumber {
      *
      * @return 出生日期（1-31）
      */
-    public byte day() {
-        return day;
+    public int day() {
+        return getSegment(bytes, DAY);
     }
 
     /**
@@ -116,8 +103,12 @@ public final class IdentityNumber {
      *
      * @return 3位顺序码（000-999）
      */
-    public short sequence() {
-        return sequence;
+    public int sequence() {
+        return getSegment(bytes, SEQUENCE);
+    }
+
+    public char checksum() {
+        return (char) bytes[17];
     }
 
     @Override
@@ -138,57 +129,52 @@ public final class IdentityNumber {
         return number;
     }
 
-    private static int parse(byte[] number, int start, int end) {
+    private static int getSegment(byte[] buffer, Segment segment) {
         int result = 0;
-        for (int i = start; i < end; i++) {
-            byte c = number[i];
+        for (int i = segment.start; i < segment.end; i++) {
+            byte c = buffer[i];
             result = result * 10 + (c - '0');
         }
         return result;
     }
 
-    private static void format(byte[] buffer, int number, int offset, int width) {
-        int pos = offset + width - 1;
-        while (pos >= offset) {
-            buffer[pos--] = (byte) ('0' + (number % 10));
+    private static void setSegment(byte[] buffer, Segment segment, int number) {
+        if (number < 0 || number > segment.limit) {
+            throw new IdentityNumberFormatException("Invalid " + segment.name + " format: " + number);
+        }
+        int cur = segment.end - 1;
+        while (cur >= segment.start) {
+            buffer[cur--] = (byte) ('0' + (number % 10));
             number /= 10;
         }
     }
 
 
     private IdentityNumber validateParse() {
+        if (number.length() != 18) {
+            throw new IdentityNumberFormatException("Invalid identity number length: " + number.length());
+        }
         for (int i = 0; i < 17; i++) {
             if (bytes[i] < '0' || bytes[i] > '9') {
                 throw new IdentityNumberFormatException("Invalid character at position " + i + ": " + bytes[i]);
             }
         }
-        byte checksum = bytes[17];
-        if (checksum != 'X' && (checksum < '0' || checksum > '9')) {
-            throw new IdentityNumberFormatException("Invalid checksum character: " + (char) checksum);
-        }
-        byte[] bytes = this.bytes;
-        byte expected = calculateChecksum(bytes);
-        if (bytes[17] != expected) {
-            throw new IdentityNumberFormatException("Invalid checksum: expected " + (char) expected + ", but got " + (char)checksum);
+        validateChecksumRange();
+        byte expected = calculateChecksum(this.bytes);
+        char checksum = checksum();
+        if (checksum != expected) {
+            throw new IdentityNumberFormatException("Invalid checksum: expected " + (char) expected + ", but got " + checksum);
         }
         return this;
     }
 
     private IdentityNumber validateFormat() {
-        if (address < 0 || address > 999999) {
-            throw new IdentityNumberFormatException("Invalid address format: " + address);
-        }
-        if (year < 0 || year > 9999) {
-            throw new IdentityNumberFormatException("Invalid year format: " + year);
-        }
-        if (month < 0 || month > 12) {
-            throw new IdentityNumberFormatException("Invalid month format: " + month);
-        }
-        if (day < 0 || day > 31) {
-            throw new IdentityNumberFormatException("Invalid day format: " + day);
-        }
+        validateChecksumRange();
+        int year = year();
+        int month = month();
+        int day = day();
         if (day > 28) {
-            int dom = switch (month) {
+            int dom = switch (month()) {
                 case 2 -> (IsoChronology.INSTANCE.isLeapYear(year) ? 29 : 28);
                 case 4, 6, 9, 11 -> 30;
                 default -> 31;
@@ -201,15 +187,14 @@ public final class IdentityNumber {
                 }
             }
         }
-        if (sequence < 0 || sequence > 999) {
-            throw new IdentityNumberFormatException("Invalid sequence format: " + sequence);
-        }
-        byte checksum = bytes[17];
+        return this;
+    }
+
+    private void validateChecksumRange() {
+        char checksum = checksum();
         if (checksum != 'X' && (checksum < '0' || checksum > '9')) {
             throw new IdentityNumberFormatException("Invalid checksum format: " + checksum);
         }
-
-        return this;
     }
 
     private static byte calculateChecksum(byte[] bytes) {
@@ -222,5 +207,11 @@ public final class IdentityNumber {
 
         int remainder = sum % 11;
         return CHECK_CODES[remainder];
+    }
+
+    private record Segment(String name, int start, int end, int limit) {
+        private Segment(String name, int start, int end) {
+            this(name, start, end, (int) Math.pow(10, end - start) - 1);
+        }
     }
 }
