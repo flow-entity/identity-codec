@@ -199,7 +199,7 @@ SPECK是一族轻量级分组密码算法。
 IdentityNumber id = IdentityNumber.parse("11010519491231002X");
 
 // 格式化身份证号码
-IdentityNumber id = IdentityNumber.format(110105, (short)1949, (byte)12, (byte)31, (short)2);
+IdentityNumber id = IdentityNumber.format(110105, 1949, 10, 1, 1);
 
 // 获取身份证信息
 int address = id.address();    // 地址码

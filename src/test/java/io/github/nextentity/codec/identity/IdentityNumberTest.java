@@ -57,12 +57,12 @@ class IdentityNumberTest {
         logger.info("=== format方法测试 ===");
 
         // 测试format方法能否正确生成身份证号码
-        IdentityNumber identity = IdentityNumber.format(110105, (short) 1949, (byte) 12, (byte) 31, (short) 2);
+        IdentityNumber identity = IdentityNumber.format(110105, 1949, 12, 31, 2);
         assertEquals("11010519491231002X", identity.number());
         logger.info("✓ format方法测试通过: {}", identity.number());
 
         // 测试另一个格式化案例
-        IdentityNumber identity2 = IdentityNumber.format(110101, (short) 1990, (byte) 1, (byte) 1, (short) 123);
+        IdentityNumber identity2 = IdentityNumber.format(110101, 1990, 1, 1, 123);
         assertEquals("110101199001011237", identity2.number());
         logger.info("✓ format方法第二个测试通过: {}", identity2.number());
 
@@ -174,7 +174,7 @@ class IdentityNumberTest {
         // 测试无效地址码
         IdentityNumberFormatException exception1 = assertThrows(
                 IdentityNumberFormatException.class,
-                () -> IdentityNumber.format(-1, (short) 1990, (byte) 1, (byte) 1, (short) 123),
+                () -> IdentityNumber.format(-1, 1990, 1, 1, 123),
                 "负数地址码应该抛出异常"
         );
         assertTrue(exception1.getMessage().contains("Invalid address format"));
@@ -182,7 +182,7 @@ class IdentityNumberTest {
 
         IdentityNumberFormatException exception2 = assertThrows(
                 IdentityNumberFormatException.class,
-                () -> IdentityNumber.format(1000000, (short) 1990, (byte) 1, (byte) 1, (short) 123),
+                () -> IdentityNumber.format(1000000, 1990, 1, 1, 123),
                 "超过6位数的地址码应该抛出异常"
         );
         assertTrue(exception2.getMessage().contains("Invalid address format"));
@@ -191,7 +191,7 @@ class IdentityNumberTest {
         // 测试无效年份
         IdentityNumberFormatException exception3 = assertThrows(
                 IdentityNumberFormatException.class,
-                () -> IdentityNumber.format(110101, (short) -1, (byte) 1, (byte) 1, (short) 123),
+                () -> IdentityNumber.format(110101, -1, 1, 1, 123),
                 "负数年份应该抛出异常"
         );
         assertTrue(exception3.getMessage().contains("Invalid year format"));
@@ -199,7 +199,7 @@ class IdentityNumberTest {
 
         IdentityNumberFormatException exception4 = assertThrows(
                 IdentityNumberFormatException.class,
-                () -> IdentityNumber.format(110101, (short) 10000, (byte) 1, (byte) 1, (short) 123),
+                () -> IdentityNumber.format(110101, 10000, 1, 1, 123),
                 "超过4位数的年份应该抛出异常"
         );
         assertTrue(exception4.getMessage().contains("Invalid year format"));
@@ -210,7 +210,7 @@ class IdentityNumberTest {
         // 我们测试一个明显的无效值
         IdentityNumberFormatException exception6 = assertThrows(
                 IdentityNumberFormatException.class,
-                () -> IdentityNumber.format(110101, (short) 1990, (byte) 13, (byte) 1, (short) 123),
+                () -> IdentityNumber.format(110101, 1990, 13, 1, 123),
                 "13月份应该抛出异常"
         );
         // 由于format方法的实现，13月份可能不会立即抛出异常，我们在validateFormat中检查
@@ -220,7 +220,7 @@ class IdentityNumberTest {
         // 测试无效日期
         IdentityNumberFormatException exception7 = assertThrows(
                 IdentityNumberFormatException.class,
-                () -> IdentityNumber.format(110101, (short) 1990, (byte) 2, (byte) 30, (short) 123),
+                () -> IdentityNumber.format(110101, 1990, 2, 30, 123),
                 "2月30日应该抛出异常"
         );
         assertTrue(exception7.getMessage().contains("Invalid day format"));
@@ -230,7 +230,7 @@ class IdentityNumberTest {
         // 测试无效顺序码
         IdentityNumberFormatException exception8 = assertThrows(
                 IdentityNumberFormatException.class,
-                () -> IdentityNumber.format(110101, (short) 1990, (byte) 1, (byte) 1, (short) -1),
+                () -> IdentityNumber.format(110101, 1990, 1, 1, -1),
                 "负数顺序码应该抛出异常"
         );
         assertTrue(exception8.getMessage().contains("Invalid sequence format"));
@@ -238,7 +238,7 @@ class IdentityNumberTest {
 
         IdentityNumberFormatException exception9 = assertThrows(
                 IdentityNumberFormatException.class,
-                () -> IdentityNumber.format(110101, (short) 1990, (byte) 1, (byte) 1, (short) 1000),
+                () -> IdentityNumber.format(110101, 1990, 1, 1, 1000),
                 "超过3位数的顺序码应该抛出异常"
         );
         assertTrue(exception9.getMessage().contains("Invalid sequence format"));
@@ -254,7 +254,7 @@ class IdentityNumberTest {
         logger.info("=== 闰年处理测试 ===");
 
         // 测试闰年的2月29日（2000年是闰年）
-        IdentityNumber leapYearId = IdentityNumber.format(110101, (short) 2000, (byte) 2, (byte) 29, (short) 123);
+        IdentityNumber leapYearId = IdentityNumber.format(110101, 2000, 2, 29, 123);
         // 让我们验证生成的身份证号码，而不是硬编码预期值
         assertEquals(110101, leapYearId.address());
         assertEquals(2000, leapYearId.year());
@@ -266,7 +266,7 @@ class IdentityNumberTest {
         // 测试非闰年的2月29日（1900年不是闰年）
         IdentityNumberFormatException exception = assertThrows(
                 IdentityNumberFormatException.class,
-                () -> IdentityNumber.format(110101, (short) 1900, (byte) 2, (byte) 29, (short) 123),
+                () -> IdentityNumber.format(110101, 1900, 2, 29, 123),
                 "非闰年的2月29日应该抛出异常"
         );
         assertTrue(exception.getMessage().contains("February 29") && exception.getMessage().contains("1900"));
@@ -347,7 +347,7 @@ class IdentityNumberTest {
 
         // 批量格式化测试
         for (int i = 0; i < 100000; i++) {
-            IdentityNumber identity = IdentityNumber.format(110101, (short) 1990, (byte) 1, (byte) 1, (short) 123);
+            IdentityNumber identity = IdentityNumber.format(110101, 1990, 1, 1, 123);
             assertEquals("110101199001011237", identity.number());
         }
 
