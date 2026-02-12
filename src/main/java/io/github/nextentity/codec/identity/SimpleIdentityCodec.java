@@ -116,7 +116,17 @@ public class SimpleIdentityCodec implements IdentityCodec {
 
         // 6. 校验年份是否为四位数（年份应在 0000-9999 范围内）
         int year = birth.getYear();
-        return IdentityNumber.format(address, year, birth.getMonthValue(), birth.getDayOfMonth(), sequence);
+        try {
+            return IdentityNumber.format(
+                    address,
+                    year,
+                    birth.getMonthValue(),
+                    birth.getDayOfMonth(),
+                    sequence
+            );
+        } catch (IdentityNumberFormatException e) {
+            throw new IdentityCodecException("Invalid identity number format.", e);
+        }
     }
 
 }
