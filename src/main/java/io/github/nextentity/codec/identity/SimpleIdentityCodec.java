@@ -29,7 +29,13 @@ public class SimpleIdentityCodec implements IdentityCodec {
      */
     private static final int VERSION = 1;
 
-    public static final IdentityCodec INSTANCE = new SimpleIdentityCodec();
+    private static final IdentityCodec INSTANCE = new SimpleIdentityCodec();
+
+    /**
+     * 默认构造函数
+     */
+    public SimpleIdentityCodec() {
+    }
 
     /**
      * 获取单例实例

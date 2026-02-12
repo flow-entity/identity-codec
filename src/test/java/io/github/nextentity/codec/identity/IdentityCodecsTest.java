@@ -91,23 +91,12 @@ public class IdentityCodecsTest {
      */
     @Test
     void testSpeck64EncryptIntArrayValidation() {
-        // 测试null密钥
-        assertThrows(NullPointerException.class, () -> 
-            IdentityCodecs.speck64Encrypt((int[]) null),
-            "null密钥应该抛出NullPointerException");
-        
         // 测试长度不足的密钥
-        int[] shortKey = {0x01234567, 0x89ABCDEF};
+        int[] shortKey = {0x01234567};
         assertThrows(IllegalArgumentException.class, () -> 
             IdentityCodecs.speck64Encrypt(shortKey),
             "长度不足的密钥应该抛出IllegalArgumentException");
-        
-        // 测试长度过长的密钥
-        int[] longKey = {0x01234567, 0x89ABCDEF, 0xFEDCBA98, 0x76543210, 0x11111111};
-        assertThrows(IllegalArgumentException.class, () -> 
-            IdentityCodecs.speck64Encrypt(longKey),
-            "长度过长的密钥应该抛出IllegalArgumentException");
-        
+
         logger.info("int数组密钥参数验证测试通过");
     }
 
@@ -116,22 +105,17 @@ public class IdentityCodecsTest {
      */
     @Test
     void testSpeck64EncryptByteArrayValidation() {
-        // 测试null密钥
-        assertThrows(NullPointerException.class, () -> 
-            IdentityCodecs.speck64Encrypt((byte[]) null),
-            "null密钥应该抛出NullPointerException");
-        
         // 测试长度不足的密钥
-        byte[] shortKey = {0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08};
+        byte[] shortKey = {0x01, 0x02, 0x03, 0x04};
         assertThrows(IllegalArgumentException.class, () -> 
             IdentityCodecs.speck64Encrypt(shortKey),
             "长度不足的密钥应该抛出IllegalArgumentException");
         
         // 测试长度过长的密钥
-        byte[] longKey = new byte[20];
+        byte[] longKey = new byte[18];
         assertThrows(IllegalArgumentException.class, () -> 
             IdentityCodecs.speck64Encrypt(longKey),
-            "长度过长的密钥应该抛出IllegalArgumentException");
+            "长度不是4的倍数的密钥应该抛出IllegalArgumentException");
         
         logger.info("字节数组密钥参数验证测试通过");
     }

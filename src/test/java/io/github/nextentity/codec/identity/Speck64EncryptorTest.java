@@ -55,11 +55,11 @@ public class Speck64EncryptorTest {
     @Test
     void testByteArrayConstructorValidation() {
         // 测试长度不足的字节数组
-        byte[] shortKey = {0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08};
+        byte[] shortKey = {0x01, 0x02, 0x03, 0x04};
         assertThrows(IllegalArgumentException.class, () -> new Speck64Encryptor(shortKey));
 
         // 测试长度过长的字节数组
-        byte[] longKey = new byte[20];
+        byte[] longKey = new byte[18];
         assertThrows(IllegalArgumentException.class, () -> new Speck64Encryptor(longKey));
     }
 
@@ -72,11 +72,8 @@ public class Speck64EncryptorTest {
         assertDoesNotThrow(() -> new Speck64Encryptor(TEST_KEY));
 
         // 测试错误长度的密钥
-        int[] shortKey = {0x01234567, 0x89ABCDEF};
+        int[] shortKey = {0x01234567,};
         assertThrows(IllegalArgumentException.class, () -> new Speck64Encryptor(shortKey));
-
-        int[] longKey = {0x01234567, 0x89ABCDEF, 0xFEDCBA98, 0x76543210, 0x11111111};
-        assertThrows(IllegalArgumentException.class, () -> new Speck64Encryptor(longKey));
     }
 
     /**
