@@ -203,10 +203,10 @@ IdentityNumber id = IdentityNumber.format(110105, 1949, 10, 1, 1);
 
 // 获取身份证信息
 int address = id.address();    // 地址码
-short year = id.year();        // 年份
-byte month = id.month();       // 月份
-byte day = id.day();           // 日期
-short sequence = id.sequence(); // 顺序码
+int year = id.year();        // 年份
+int month = id.month();       // 月份
+int day = id.day();           // 日期
+int sequence = id.sequence(); // 顺序码
 ```
 
 #### IdentityCodec (接口)
