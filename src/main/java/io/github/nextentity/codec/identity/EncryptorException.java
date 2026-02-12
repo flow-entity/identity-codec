@@ -10,7 +10,7 @@ import java.io.Serial;
  *
  * @version 1.0
  */
-public class EncryptorException extends IdentityCodecException {
+public class EncryptorException extends RuntimeException {
 
     @Serial
     private static final long serialVersionUID = 6749382019357218932L;

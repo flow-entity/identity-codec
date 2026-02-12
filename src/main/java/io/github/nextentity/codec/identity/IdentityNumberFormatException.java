@@ -9,7 +9,7 @@ import java.io.Serial;
  *
  * @version 1.0
  */
-public class IdentityNumberFormatException extends IdentityCodecException {
+public class IdentityNumberFormatException extends RuntimeException {
 
     @Serial
     private static final long serialVersionUID = 4270343855622804394L;
