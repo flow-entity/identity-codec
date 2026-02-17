@@ -73,7 +73,7 @@ IdentityCodecs          - 工厂类
 <dependency>
     <groupId>io.github.nextentity</groupId>
     <artifactId>identity-codec</artifactId>
-    <version>1.0.1</version>
+    <version>1.0.2</version>
 </dependency>
 ```
 
