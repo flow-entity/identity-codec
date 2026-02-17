@@ -1,4 +1,4 @@
-package io.github.nextentity.codec.identity;
+package io.github.flowentity.codec.identity;
 
 /**
  * 加密器接口

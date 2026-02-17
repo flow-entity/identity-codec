@@ -1,4 +1,4 @@
-package io.github.nextentity.codec.identity;
+package io.github.flowentity.codec.identity;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;

@@ -1,4 +1,4 @@
-package io.github.nextentity.codec.identity;
+package io.github.flowentity.codec.identity;
 
 /**
  * 测试常量类 - 统一管理测试中使用的常量数据
